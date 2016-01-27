@@ -4,7 +4,101 @@
 ARM Macro Assembler    Page 1 
 
 
+    1 00000000                 AREA             text, CODE, READONLY
+    2 00000000                 EXPORT           Kalmanfilter_asm
+    3 00000000         
+    4 00000000         ; function Kalmanfilter_asm
+    5 00000000         ; inputs:
+    6 00000000         ; -------
+    7 00000000         ; R0: pointer to the input (float *)
+    8 00000000         ; R1: pointer to filtered data array (float *)
+    9 00000000         ; R2: length of array (number of floats in array)
+   10 00000000         ; R3: pointer to Kalman filter state (struct kalman_stat
+                       e *)
+   11 00000000         
+   12 00000000         ; outputs:
+   13 00000000         ; --------
+   14 00000000         ; R0: 0 if successful, 1 if failed due to overflow (int)
                        
+   15 00000000         Kalmanfilter_asm
+   16 00000000 ED93 0A00       VLDR.f32         S0, [R3]    ; q
+   17 00000004 EDD3 0A01       VLDR.f32         S1, [R3, #4] ; r
+   18 00000008 ED93 1A02       VLDR.f32         S2, [R3, #8] ; x
+   19 0000000C EDD3 1A03       VLDR.f32         S3, [R3, #12] ; p
+   20 00000010 ED93 2A04       VLDR.f32         S4, [R3, #16] ; k
+   21 00000014 F04F 0400       MOV              R4, #0      ; index = 0
+   22 00000018 460D            MOV              R5, R1      ; current address i
+                                                            n filtered
+   23 0000001A         
+   24 0000001A         loop
+   25 0000001A 4294            CMP              R4, R2
+   26 0000001C D033            BEQ              end_loop
+   27 0000001E EE71 1A80       VADD.f32         S3, S3, S0  ; p = p + q
+   28 00000022 EEF1 FA10       VMRS             APSR_nzcv, FPSCR ; load status
+   29 00000026 D63B            BVS              error       ; if overflow, goto
+                                                             error
+   30 00000028 EE71 2AA0       VADD.f32         S5, S3, S1  ; p + r
+   31 0000002C EEF1 FA10       VMRS             APSR_nzcv, FPSCR ; load status
+   32 00000030 D636            BVS              error       ; if overflow, goto
+                                                             error
+   33 00000032 D035            BEQ              error       ; if zero, goto err
+                                                            or
+   34 00000034 EE81 2AA2       VDIV.f32         S4, S3, S5  ; k = p / (p + r)
+   35 00000038 EEF1 FA10       VMRS             APSR_nzcv, FPSCR ; load status
+   36 0000003C D630            BVS              error       ; if overflow, goto
+                                                             error
+   37 0000003E EDD5 2A00       VLDR.f32         S5, [R5]    ; read measurement 
+                                                            at index
+   38 00000042 EE72 2AC1       VSUB.f32         S5, S5, S2  ; measurement - x
+   39 00000046 EEF1 FA10       VMRS             APSR_nzcv, FPSCR ; load status
+   40 0000004A D629            BVS              error       ; if overflow, goto
+                                                             error
+   41 0000004C EE62 2A82       VMUL.f32         S5, S5, S4  ; k * (measurement 
+                                                            - x)
+   42 00000050 EEF1 FA10       VMRS             APSR_nzcv, FPSCR ; load status
+   43 00000054 D624            BVS              error       ; if overflow, goto
+                                                             error
+   44 00000056 EE31 1A22       VADD.f32         S2, S2, S5  ; x = x + k * (meas
+                                                            urement - x)
+   45 0000005A EEF1 FA10       VMRS             APSR_nzcv, FPSCR ; load status
+   46 0000005E D61F            BVS              error       ; if overflow, goto
+                                                             error
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+   47 00000060 ED85 1A00       VSTR.f32         S2, [R5]    ; store filtered x 
+                                                            in array
+   48 00000064 EEF7 2A00       VLDR.f32         S5, =1.0    ; 1
+   49 00000068 EE72 2AC2       VSUB.f32         S5, S5, S4  ; 1 - k
+   50 0000006C EEF1 FA10       VMRS             APSR_nzcv, FPSCR ; load status
+   51 00000070 D616            BVS              error       ; if overflow, goto
+                                                             error
+   52 00000072 EE61 1AA2       VMUL.f32         S3, S3, S5  ; p = (1 - k)*p
+   53 00000076 EEF1 FA10       VMRS             APSR_nzcv, FPSCR ; load status
+   54 0000007A D611            BVS              error       ; if overflow, goto
+                                                             error
+   55 0000007C F104 0401       ADD              R4, R4, #1  ; increment index
+   56 00000080 F105 0504       ADD              R5, R5, #4  ; the address in by
+                                                            tes increments by 4
+                                                            
+   57 00000084 E7C9            B                loop
+   58 00000086         
+   59 00000086         end_loop
+   60 00000086 ED83 0A00       VSTR.f32         S0, [R3]    ; q
+   61 0000008A EDC3 0A01       VSTR.f32         S1, [R3, #4] ; r
+   62 0000008E ED83 1A02       VSTR.f32         S2, [R3, #8] ; x
+   63 00000092 EDC3 1A03       VSTR.f32         S3, [R3, #12] ; p
+   64 00000096 ED83 2A04       VSTR.f32         S4, [R3, #16] ; k
+   65 0000009A F04F 0000       MOV              R0, #0
+   66 0000009E 4770            BX               LR          ; return 0
+   67 000000A0         
+   68 000000A0         error
+   69 000000A0 F04F 0001       MOV              R0, #1
+   70 000000A4 4770            BX               LR          ; return 1
+   71 000000A6                 END
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
 erwork --depend=.\objects\assembly.d -o.\objects\assembly.o -I"\campus.mcgill.c
 a\EMF\ELE\gsavad\My Documents\Microprocessor Systems\Lab1\Lab1_STM32F4Cube_Base
@@ -12,4 +106,59 @@ _project\RTE" -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\4.5.0\CMSIS\Include -IC:\Keil_v5\
 ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include --p
 redefine="__UVISION_VERSION SETA 515" --predefine="_RTE_ SETA 1" --predefine="S
 TM32F407xx SETA 1" --list=.\listings\assembly.lst Sources\Assembly.s
-333 symbols in table
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+Kalmanfilter_asm 00000000
+
+Symbol: Kalmanfilter_asm
+   Definitions
+      At line 15 in file Sources\Assembly.s
+   Uses
+      At line 2 in file Sources\Assembly.s
+Comment: Kalmanfilter_asm used once
+end_loop 00000086
+
+Symbol: end_loop
+   Definitions
+      At line 59 in file Sources\Assembly.s
+   Uses
+      At line 26 in file Sources\Assembly.s
+Comment: end_loop used once
+error 000000A0
+
+Symbol: error
+   Definitions
+      At line 68 in file Sources\Assembly.s
+   Uses
+      At line 29 in file Sources\Assembly.s
+      At line 32 in file Sources\Assembly.s
+      At line 33 in file Sources\Assembly.s
+      At line 36 in file Sources\Assembly.s
+      At line 40 in file Sources\Assembly.s
+      At line 43 in file Sources\Assembly.s
+      At line 46 in file Sources\Assembly.s
+      At line 51 in file Sources\Assembly.s
+      At line 54 in file Sources\Assembly.s
+
+loop 0000001A
+
+Symbol: loop
+   Definitions
+      At line 24 in file Sources\Assembly.s
+   Uses
+      At line 57 in file Sources\Assembly.s
+Comment: loop used once
+text 00000000
+
+Symbol: text
+   Definitions
+      At line 1 in file Sources\Assembly.s
+   Uses
+      None
+Comment: text unused
+5 symbols
+339 symbols in table
