@@ -108,13 +108,12 @@ ARM Macro Assembler    Page 2
    75 000000B0 4770            BX               LR          ; return 1
    76 000000B2                 END
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
-erwork --depend=.\objects\kalmanfilter_asm.d -o.\objects\kalmanfilter_asm.o -I"
-H:\My Documents\Microprocessor Systems\MicroP_Labs\Lab1\Lab1_STM32F4Cube_Base_p
-roject\RTE" -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\4.5.0\CMSIS\Include -IC:\Keil_v5\AR
-M\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include --pre
-define="__UVISION_VERSION SETA 515" --predefine="_RTE_ SETA 1" --predefine="STM
-32F407xx SETA 1" --list=.\listings\kalmanfilter_asm.lst Sources\Kalmanfilter_as
-m.s
+erwork --depend=.\objects\kalmanfilter_asm.d -o.\objects\kalmanfilter_asm.o -IH
+:\MicroP_Labs\Lab1\Lab1_STM32F4Cube_Base_project\RTE -IC:\Keil_v5\ARM\PACK\ARM\
+CMSIS\4.5.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Driver
+s\CMSIS\Device\ST\STM32F4xx\Include --predefine="__UVISION_VERSION SETA 515" --
+predefine="_RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --list=.\listings\kal
+manfilter_asm.lst Sources\Kalmanfilter_asm.s
 
 
 

@@ -51,7 +51,7 @@ big_loop
 	; call Kalmanfilter_asm
 	LDR				R0,	=InputArray
 	LDR				R1, =OutputArray
-	MOV				R2, #5
+	MOV				R2, #6
 	LDR				R3, =kstate
 	LDR				R4, =Kalmanfilter_asm
 	BLX				R4

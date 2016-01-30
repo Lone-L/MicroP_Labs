@@ -186,8 +186,9 @@ Reset_Handler    PROC
                  EXPORT  Reset_Handler             [WEAK]
 ;								IMPORT  SystemInit
 ;								IMPORT  __main
-								IMPORT workbench_asm
-									
+								;IMPORT workbench_asm
+								IMPORT main
+								
 								; Initialize FPU
 								LDR.W	 R0, =0xE000ED88
 								LDR	 R1, [R0]
@@ -198,7 +199,7 @@ Reset_Handler    PROC
 								; end initialize FPU
 								
 ;                LDR     R0, =SystemInit
-								LDR			R0, =workbench_asm
+								LDR			R0, =main
                 BLX     R0
 ;                LDR     R0, =__main
 ;                BX      R0

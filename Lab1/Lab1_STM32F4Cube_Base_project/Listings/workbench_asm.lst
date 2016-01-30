@@ -58,7 +58,7 @@ ARM Macro Assembler    Page 1
    51 0000004E         ; call Kalmanfilter_asm
    52 0000004E 4811            LDR              R0, =InputArray
    53 00000050 4914            LDR              R1, =OutputArray
-   54 00000052 F04F 0205       MOV              R2, #5
+   54 00000052 F04F 0206       MOV              R2, #6
    55 00000056 4B11            LDR              R3, =kstate
    56 00000058 4C15            LDR              R4, =Kalmanfilter_asm
    57 0000005A 47A0            BLX              R4
@@ -137,12 +137,12 @@ ARM Macro Assembler    Page 3
                                                              p, kstate[4] = k
    76 00000044                 END
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
-erwork --depend=.\objects\workbench_asm.d -o.\objects\workbench_asm.o -I"H:\My 
-Documents\Microprocessor Systems\MicroP_Labs\Lab1\Lab1_STM32F4Cube_Base_project
-\RTE" -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\4.5.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK
-\Keil\STM32F4xx_DFP\2.7.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include --predefine
-="__UVISION_VERSION SETA 515" --predefine="_RTE_ SETA 1" --predefine="STM32F407
-xx SETA 1" --list=.\listings\workbench_asm.lst Sources\workbench_asm.s
+erwork --depend=.\objects\workbench_asm.d -o.\objects\workbench_asm.o -IH:\Micr
+oP_Labs\Lab1\Lab1_STM32F4Cube_Base_project\RTE -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\
+4.5.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\CMSI
+S\Device\ST\STM32F4xx\Include --predefine="__UVISION_VERSION SETA 515" --predef
+ine="_RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --list=.\listings\workbench
+_asm.lst Sources\workbench_asm.s
 
 
 
