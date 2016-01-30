@@ -9,6 +9,8 @@ struct kalman_state{
 	float k;
 };
 
+extern void workbench_asm(void);
+
 int Kalmanfilter_C(float* InputArray, float* OutputArray, struct kalman_state* kstate, int Length){
 	int i;
 	for(i = 0; i < Length; i++) {
@@ -44,10 +46,12 @@ int main()
 	
 	float InputArray[] = {1.0, 1.5, 0.0, 0.78, 1.32, 1.44};
 	float OutputArray[sizeof InputArray / sizeof(float)];
-	int i = 0;
 	
 	if (!Kalmanfilter_C(InputArray, OutputArray, &k_state, sizeof InputArray / sizeof(float))) {
-		
+		printf("success\n");
 	}
+	
+	workbench_asm();
+	
 	return 0;
 }
