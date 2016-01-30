@@ -418,14 +418,19 @@
               <FilePath>.\Sources\main.c</FilePath>
             </File>
             <File>
-              <FileName>Assembly.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\Sources\Assembly.s</FilePath>
-            </File>
-            <File>
               <FileName>fput_debug.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Sources\fput_debug.c</FilePath>
+            </File>
+            <File>
+              <FileName>Kalmanfilter_asm.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\Sources\Kalmanfilter_asm.s</FilePath>
+            </File>
+            <File>
+              <FileName>workbench_asm.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\Sources\workbench_asm.s</FilePath>
             </File>
           </Files>
         </Group>
