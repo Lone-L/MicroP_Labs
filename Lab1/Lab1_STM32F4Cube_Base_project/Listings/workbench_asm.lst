@@ -18,13 +18,13 @@ ARM Macro Assembler    Page 1
    12 00000000         ; none
    13 00000000         workbench_asm
    14 00000000 B530            PUSH             {R4-R5, LR}
-   15 00000002 4824            LDR              R0, =InputArray
-   16 00000004 4924            LDR              R1, =init_InputArray
+   15 00000002 4820            LDR              R0, =InputArray
+   16 00000004 4920            LDR              R1, =init_InputArray
    17 00000006 F04F 0200       MOV              R2, #0
    18 0000000A         
    19 0000000A         ; initialize input array
    20 0000000A         loop1
-   21 0000000A 2A06            CMP              R2, #6
+   21 0000000A 2A05            CMP              R2, #5
    22 0000000C D00A            BEQ              end_loop1
    23 0000000E ED91 0A00       VLDR.f32         S0, [R1]
    24 00000012 ED80 0A00       VSTR.f32         S0, [R0]
@@ -33,8 +33,8 @@ ARM Macro Assembler    Page 1
    27 0000001E F102 0201       ADD              R2, R2, #1
    28 00000022 E7F2            B                loop1
    29 00000024         end_loop1
-   30 00000024 481D            LDR              R0, =kstate
-   31 00000026 491E            LDR              R1, =init_kstate
+   30 00000024 4819            LDR              R0, =kstate
+   31 00000026 491A            LDR              R1, =init_kstate
    32 00000028 F04F 0200       MOV              R2, #0
    33 0000002C         
    34 0000002C         ; initialize kstate
@@ -49,49 +49,41 @@ ARM Macro Assembler    Page 1
    43 00000044 E7F2            B                loop2
    44 00000046         end_loop2
    45 00000046         
-   46 00000046         ; call Kalmanfilter_asm multiple times in a loop for tim
-                       ing measurements
-   47 00000046 F04F 0501       MOV              R5, #1
-   48 0000004A         big_loop
-   49 0000004A 2D00            CMP              R5, #0
-   50 0000004C D009            BEQ              end_big_loop
-   51 0000004E         ; call Kalmanfilter_asm
-   52 0000004E 4811            LDR              R0, =InputArray
-   53 00000050 4914            LDR              R1, =OutputArray
-   54 00000052 F04F 0206       MOV              R2, #6
-   55 00000056 4B11            LDR              R3, =kstate
-   56 00000058 4C15            LDR              R4, =Kalmanfilter_asm
-   57 0000005A 47A0            BLX              R4
-   58 0000005C F1A5 0501       SUB              R5, R5, #1
+   46 00000046         
+   47 00000046         ; call Kalmanfilter_asm
+   48 00000046 480F            LDR              R0, =InputArray
+   49 00000048 4912            LDR              R1, =OutputArray
+   50 0000004A F04F 0205       MOV              R2, #5
+   51 0000004E 4B0F            LDR              R3, =kstate
+   52 00000050 4C13            LDR              R4, =Kalmanfilter_asm
+   53 00000052 47A0            BLX              R4
+   54 00000054         
+   55 00000054         ; Return
+   56 00000054 E8BD 4030       POP              {R4-R5, LR}
+   57 00000058 4770            BX               LR
+   58 0000005A         
+   59 0000005A         ; Initialized array and struct kstate
 
 
 
 ARM Macro Assembler    Page 2 
 
 
-   59 00000060 E7F3            B                big_loop
-   60 00000062         end_big_loop
-   61 00000062         ; Return
-   62 00000062 E8BD 4030       POP              {R4-R5, LR}
-   63 00000066 4770            BX               LR
-   64 00000068         
-   65 00000068         ; Initialized array and struct kstate
-   66 00000068                 ALIGN
-   67 00000068 3F800000 
+   60 0000005A 00 00           ALIGN
+   61 0000005C 3F800000 
               3FC00000 
               00000000 
               3F47AE14 
-              3FA8F5C3 
-              3FB851EC init_InputArray
-                               DCFS             1.0, 1.5, 0.0, 0.78, 1.32, 1.44
-   68 00000080 3DCCCCCD 
+              3FA8F5C3 init_InputArray
+                               DCFS             1.0, 1.5, 0.0, 0.78, 1.32
+   62 00000070 3DCCCCCD 
               3DCCCCCD 
               00000000 
               3DCCCCCD 
               00000000 init_kstate
-                               DCFS             0.1, 0.1, 0.0, 0.1, 0.0
-   69 00000094         
-   70 00000094 00000000 
+                               DCFS             0.1, 0.1, 0, 0.1, 0
+   63 00000084         
+   64 00000084 00000000 
               00000000 
               00000000 
               00000000 
@@ -99,27 +91,25 @@ ARM Macro Assembler    Page 2
               00000000 
               00000000 
               00000000         AREA             myData, DATA, READWRITE
-   71 00000000         
-   72 00000000                 ALIGN
-   73 00000000 00 00 00 
+   65 00000000         
+   66 00000000                 ALIGN
+   67 00000000 00 00 00 
               00 00 00 
               00 00 00 
               00 00 00 
               00 00 00 
               00 00 00 
-              00 00 00 
-              00 00 00 InputArray
-                               SPACE            6*4         ; 6 floats
-   74 00000018 00 00 00 
-              00 00 00 
+              00 00    InputArray
+                               SPACE            5*4         ; 5 floats
+   68 00000014 00 00 00 
               00 00 00 
               00 00 00 
               00 00 00 
               00 00 00 
               00 00 00 
-              00 00 00 OutputArray
-                               SPACE            6*4
-   75 00000030 00 00 00 
+              00 00    OutputArray
+                               SPACE            5*4
+   69 00000028 00 00 00 
               00 00 00 
               00 00 00 
               00 00 00 
@@ -128,43 +118,21 @@ ARM Macro Assembler    Page 2
               00 00    kstate  SPACE            5*4         ; kstate[0] = q, ks
                                                             tate[1] = r, kstate
                                                             [2] = x, kstate[3]=
-
-
-
-ARM Macro Assembler    Page 3 
-
-
                                                              p, kstate[4] = k
-   76 00000044                 END
+   70 0000003C                 END
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
-erwork --depend=.\objects\workbench_asm.d -o.\objects\workbench_asm.o -I"H:\My 
-Documents\Microprocessor Systems\MicroP_Labs\Lab1\Lab1_STM32F4Cube_Base_project
-\RTE" -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\4.5.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK
-\Keil\STM32F4xx_DFP\2.7.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include --predefine
-="__UVISION_VERSION SETA 515" --predefine="_RTE_ SETA 1" --predefine="STM32F407
-xx SETA 1" --list=.\listings\workbench_asm.lst Sources\workbench_asm.s
+erwork --depend=.\objects\workbench_asm.d -o.\objects\workbench_asm.o -IH:\Micr
+oP_Labs\MicroP_Labs\Lab1\Lab1_STM32F4Cube_Base_project\RTE -IC:\Keil_v5\ARM\PAC
+K\ARM\CMSIS\4.5.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\
+Drivers\CMSIS\Device\ST\STM32F4xx\Include --predefine="__UVISION_VERSION SETA 5
+15" --predefine="_RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --list=.\listin
+gs\workbench_asm.lst Sources\workbench_asm.s
 
 
 
 ARM Macro Assembler    Page 1 Alphabetic symbol ordering
 Relocatable symbols
 
-big_loop 0000004A
-
-Symbol: big_loop
-   Definitions
-      At line 48 in file Sources\workbench_asm.s
-   Uses
-      At line 59 in file Sources\workbench_asm.s
-Comment: big_loop used once
-end_big_loop 00000062
-
-Symbol: end_big_loop
-   Definitions
-      At line 60 in file Sources\workbench_asm.s
-   Uses
-      At line 50 in file Sources\workbench_asm.s
-Comment: end_big_loop used once
 end_loop1 00000024
 
 Symbol: end_loop1
@@ -181,19 +149,19 @@ Symbol: end_loop2
    Uses
       At line 37 in file Sources\workbench_asm.s
 Comment: end_loop2 used once
-init_InputArray 00000068
+init_InputArray 0000005C
 
 Symbol: init_InputArray
    Definitions
-      At line 67 in file Sources\workbench_asm.s
+      At line 61 in file Sources\workbench_asm.s
    Uses
       At line 16 in file Sources\workbench_asm.s
 Comment: init_InputArray used once
-init_kstate 00000080
+init_kstate 00000070
 
 Symbol: init_kstate
    Definitions
-      At line 68 in file Sources\workbench_asm.s
+      At line 62 in file Sources\workbench_asm.s
    Uses
       At line 31 in file Sources\workbench_asm.s
 Comment: init_kstate used once
@@ -208,12 +176,6 @@ Comment: loop1 used once
 loop2 0000002C
 
 Symbol: loop2
-
-
-
-ARM Macro Assembler    Page 2 Alphabetic symbol ordering
-Relocatable symbols
-
    Definitions
       At line 35 in file Sources\workbench_asm.s
    Uses
@@ -230,12 +192,18 @@ Comment: text unused
 workbench_asm 00000000
 
 Symbol: workbench_asm
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Relocatable symbols
+
    Definitions
       At line 13 in file Sources\workbench_asm.s
    Uses
       At line 3 in file Sources\workbench_asm.s
 Comment: workbench_asm used once
-10 symbols
+8 symbols
 
 
 
@@ -246,33 +214,33 @@ InputArray 00000000
 
 Symbol: InputArray
    Definitions
-      At line 73 in file Sources\workbench_asm.s
+      At line 67 in file Sources\workbench_asm.s
    Uses
       At line 15 in file Sources\workbench_asm.s
-      At line 52 in file Sources\workbench_asm.s
+      At line 48 in file Sources\workbench_asm.s
 
-OutputArray 00000018
+OutputArray 00000014
 
 Symbol: OutputArray
    Definitions
-      At line 74 in file Sources\workbench_asm.s
+      At line 68 in file Sources\workbench_asm.s
    Uses
-      At line 53 in file Sources\workbench_asm.s
+      At line 49 in file Sources\workbench_asm.s
 Comment: OutputArray used once
-kstate 00000030
+kstate 00000028
 
 Symbol: kstate
    Definitions
-      At line 75 in file Sources\workbench_asm.s
+      At line 69 in file Sources\workbench_asm.s
    Uses
       At line 30 in file Sources\workbench_asm.s
-      At line 55 in file Sources\workbench_asm.s
+      At line 51 in file Sources\workbench_asm.s
 
 myData 00000000
 
 Symbol: myData
    Definitions
-      At line 70 in file Sources\workbench_asm.s
+      At line 64 in file Sources\workbench_asm.s
    Uses
       None
 Comment: myData unused
@@ -289,7 +257,7 @@ Symbol: Kalmanfilter_asm
    Definitions
       At line 2 in file Sources\workbench_asm.s
    Uses
-      At line 56 in file Sources\workbench_asm.s
+      At line 52 in file Sources\workbench_asm.s
 Comment: Kalmanfilter_asm used once
 1 symbol
-351 symbols in table
+349 symbols in table

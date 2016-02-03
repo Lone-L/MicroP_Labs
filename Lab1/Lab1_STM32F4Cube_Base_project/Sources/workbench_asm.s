@@ -18,7 +18,7 @@ workbench_asm
 
 	; initialize input array
 loop1
-	CMP				R2, #6
+	CMP				R2, #5
 	BEQ				end_loop1
 	VLDR.f32	S0, [R1]
 	VSTR.f32	S0, [R0]
@@ -43,34 +43,28 @@ loop2
 	B					loop2
 end_loop2
 
-	; call Kalmanfilter_asm multiple times in a loop for timing measurements
-	MOV				R5,	#1
-big_loop
-	CMP				R5, #0
-	BEQ				end_big_loop
+	
 	; call Kalmanfilter_asm
 	LDR				R0,	=InputArray
 	LDR				R1, =OutputArray
-	MOV				R2, #6
+	MOV				R2, #5
 	LDR				R3, =kstate
 	LDR				R4, =Kalmanfilter_asm
-	BLX				R4
-	SUB				R5, R5, #1
-	B					big_loop
-end_big_loop
+	BLX				R4 
+	
 	; Return
 	POP				{R4-R5, LR}
 	BX				LR
 	
 	; Initialized array and struct kstate
 	ALIGN
-init_InputArray	DCFS 1.0, 1.5, 0.0, 0.78, 1.32, 1.44
-init_kstate			DCFS 0.1, 0.1, 0.0, 0.1, 0.0
+init_InputArray	DCFS 1.0, 1.5, 0.0, 0.78, 1.32
+init_kstate			DCFS 0.1, 0.1, 0, 0.1, 0
 		
 	AREA myData, DATA, READWRITE
 	
 	ALIGN
-InputArray			SPACE 6*4	; 6 floats
-OutputArray 		SPACE 6*4
+InputArray			SPACE 5*4	; 5 floats
+OutputArray 		SPACE 5*4
 kstate					SPACE 5*4	; kstate[0] = q, kstate[1] = r, kstate[2] = x, kstate[3]= p, kstate[4] = k
 	END
