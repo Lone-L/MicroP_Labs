@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "arm_math.h"
+#include "demo.h"
 
 struct kalman_state {
 	float q;
@@ -10,7 +11,7 @@ struct kalman_state {
 };
 
 extern void workbench_asm(void);
-
+extern int Kalmanfilter_asm(const float* InputArray, float* OutputArray, int Length, struct kalman_state* kstate);
 void vector_subtract(float *vector_result, const float *vector_a, const float *vector_b, int length)
 {
 	int i;
@@ -160,6 +161,7 @@ int main()
 	
 	float InputArray[] = {1.0, 1.5, 0.0, 0.78, 1.32};
 	float OutputArray[sizeof InputArray / sizeof(float)];
+	//float OutputArray[length1];
 	float difference1[sizeof InputArray / sizeof(float)];
 	float correlation1[(sizeof InputArray / sizeof(float)) * 2 - 1];
 	float convolution1[(sizeof InputArray / sizeof(float)) * 2 - 1];
@@ -174,11 +176,22 @@ int main()
 	arrays.our_conv   = convolution1;
 	arrays.cmsis_conv = convolution2;
 	
-	if (!Kalmanfilter_C(InputArray, OutputArray, &k_state, sizeof InputArray / sizeof(float))) {
+
+/*	if (!Kalmanfilter_C(measurements, OutputArray, &k_state, length1)) {
+		printf("success\n");
+	}*/
+	//workbench_asm();
+	
+	if(!Kalmanfilter_asm(InputArray, OutputArray, sizeof InputArray / sizeof(float), &k_state)) {
 		printf("success\n");
 	}
 	
-	workbench_asm();
+	
+	
+	/*if(!Kalmanfilter_C(InputArray, OutputArray, &k_state, sizeof InputArray / sizeof(float))) {
+		printf("success\n");
+	}*/
+	
 	compare_dsp(InputArray, OutputArray, sizeof InputArray / sizeof (float), &arrays);
 	
 	return 0;

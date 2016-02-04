@@ -77,7 +77,7 @@ ARM Macro Assembler    Page 2
    51 00000066 ED83 2A04       VSTR.f32         S4, [R3, #16] ; k
    52 0000006A         
    53 0000006A EEF1 0A10       VMRS             R0, FPSCR
-   54 0000006E F000 001F       AND              R0, #0x1F
+   54 0000006E F000 000F       AND              R0, #0x0F
    55 00000072         
    56 00000072 BC70            POP              {R4-R6}
    57 00000074 4770            BX               LR          ; return 0

@@ -51,7 +51,7 @@ end_loop
 	VSTR.f32	S4, [R3, #16]				; k
 	
 	VMRS R0, FPSCR
-	AND R0, #0x1F 
+	AND R0, #0x0F 
 
 	POP				{R4-R6}
 	BX				LR									; return 0
