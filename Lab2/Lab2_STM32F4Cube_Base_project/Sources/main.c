@@ -17,6 +17,10 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config	(void);
+void initialize_ADC(void);
+
+/* Global variables ----------------------------------------------------------*/
+ADC_HandleTypeDef			ADC1_handle;
 
 int main(void)
 {
@@ -26,12 +30,44 @@ int main(void)
 	
   /* Configure the system clock */
   SystemClock_Config();
+	initialize_ADC();
 	
 	while (1){
 	}
 }
 
+/** Initialize global ADC typedef struct */
+void initialize_ADC(void)
+{
+	ADC1_handle.Instance = ADC1;	/* Temperature sensor is in channel 16 of ADC1 */
+	
+	/* Set up the InitTypeDef sub-struct */
+	/* The clock for the ADC is PCKL2,at 168 MHz. */
+	ADC1_handle.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV8;	/* Select division by 8 for prescaler. */
+	ADC1_handle.Init.Resolution = ADC_RESOLUTION_12B;						/* Select 12 bits resolution */
+	ADC1_handle.Init.DataAlign = ADC_DATAALIGN_RIGHT;						/* This places the padding zeros on the MS byte */
+	ADC1_handle.Init.ScanConvMode = DISABLE;										/* Use single-channel mode */
+	ADC1_handle.Init.EOCSelection = ADC_EOC_SEQ_CONV;						/* wat */
+	ADC1_handle.Init.ContinuousConvMode = ENABLE;								/* Want continuous conversion mode */
+	ADC1_handle.Init.DMAContinuousRequests = DISABLE;						/* wat */
+	ADC1_handle.Init.NbrOfConversion = 1;												/* 1 channel / 1 conversion. Simple as that. */
+	ADC1_handle.Init.DiscontinuousConvMode = DISABLE;						/* why discontinuous? */
+	/* don't even bother with NbrOfDiscConversion */
+	ADC1_handle.Init.ExternalTrigConv = ADC_SOFTWARE_START;			/* Disable external trigger */
+	
+	/* We don't know what the NbrOfCurrentConversionRank */
+	/* Don't know about the rest either... */
+	
+	/* Initialize global ADC parameters*/
+	HAL_ADC_Init(&ADC1_handle);
+	
+	/* Configure the channel */
+	/* then call start */
+	/* p.104 doc 19 + doc 5 p.207 + doc 6 p.137*/
+	
+}
 
+/* Hal MSP_Init */
 
 /** System Clock Configuration */
 void SystemClock_Config(void){
