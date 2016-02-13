@@ -12,6 +12,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 #include "supporting_functions.h"
+#include "main.h"
 
 /* Private variables ---------------------------------------------------------*/
 
@@ -21,24 +22,42 @@ void initialize_ADC(void);
 
 /* Global variables ----------------------------------------------------------*/
 ADC_HandleTypeDef			ADC1_handle;
+int										SYSTICK_READ_TEMP_FLAG = 0;	/* Set by Systick_Handler and unset in main */
 
 int main(void)
 {
+	uint32_t v_sense;
+	float temperature;
+	
   /* MCU Configuration----------------------------------------------------------*/
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 	
   /* Configure the system clock */
   SystemClock_Config();
+	
 	initialize_ADC();
 	
-	while (1){
+	while (1) {
+		if (SYSTICK_READ_TEMP_FLAG == 1) {
+			v_sense = HAL_ADC_GetValue(&ADC1_handle);
+			temperature = ((float)v_sense - V_25) / AVG_SLOPE + TEMP_REF;	/* Formula for temperature from doc_05 p.230 */
+			printf("Temperature = %f\n", temperature);
+			SYSTICK_READ_TEMP_FLAG = 0;
+		}
 	}
 }
 
-/** Initialize global ADC typedef struct */
+/** 
+   * @brief Initialize global ADC typedef struct
+   * @param None
+   * @retval None
+   */
 void initialize_ADC(void)
 {
+	/* Information on configuring the ADC found in p.104 doc 19 + doc 5 p.207 + doc 6 p.137*/
+	ADC_ChannelConfTypeDef channel_config;	/* Channel configuration struct */
+	
 	ADC1_handle.Instance = ADC1;	/* Temperature sensor is in channel 16 of ADC1 */
 	
 	/* Set up the InitTypeDef sub-struct */
@@ -59,19 +78,28 @@ void initialize_ADC(void)
 	/* Don't know about the rest either... */
 	
 	/* Initialize global ADC parameters*/
-	HAL_ADC_Init(&ADC1_handle);
+	if (HAL_ADC_Init(&ADC1_handle) != HAL_OK)
+		Error_Handler(ADC_INIT_FAIL);
 	
 	/* Configure the channel */
-	/* then call start */
-	/* p.104 doc 19 + doc 5 p.207 + doc 6 p.137*/
+	channel_config.Channel = ADC_CHANNEL_16;
+	channel_config.Rank = 1;
+	channel_config.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+	channel_config.Offset = 0;
 	
+	if (HAL_ADC_ConfigChannel(&ADC1_handle, &channel_config) != HAL_OK)
+		Error_Handler(ADC_CH_CONFIG_FAIL);
+	
+	/* then call start */
+	if (HAL_ADC_Start(&ADC1_handle) != HAL_OK)
+		Error_Handler(ADC_INIT_FAIL);
 }
 
 /* Hal MSP_Init */
 
 /** System Clock Configuration */
-void SystemClock_Config(void){
-
+void SystemClock_Config(void)
+{
   RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
 
@@ -121,6 +149,7 @@ void SystemClock_Config(void){
    * @param line: assert_param error line source number
    * @retval None
    */
-void assert_failed(uint8_t* file, uint32_t line){
+void assert_failed(uint8_t* file, uint32_t line)
+{
 }
 #endif

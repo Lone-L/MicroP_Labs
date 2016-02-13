@@ -44,8 +44,14 @@
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
+#define V_25			0.76	/* Volts, for temperature sensor calculation at 25 C */
+#define AVG_SLOPE	2.5		/* mV/C, for temperature sensor calculation */
+#define TEMP_REF	25.0	/* C */
+
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
+/* Global flags ------ */
+extern int SYSTICK_READ_TEMP_FLAG;	/* Set by Systick_Handler and unset in main */
 
 #endif /* __MAIN_H */
 
