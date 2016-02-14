@@ -44,9 +44,21 @@
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
-#define V_25			0.76	/* Volts, for temperature sensor calculation at 25 C */
-#define AVG_SLOPE	2.5		/* mV/C, for temperature sensor calculation */
-#define TEMP_REF	25.0	/* C */
+#define V_25			((float)0.760)	/* V, for temperature sensor calculation at 25 C */
+#define AVG_SLOPE	((float)0.0025)	/* V/C, for temperature sensor calculation */
+#define TEMP_REF	((float)25.0)	/* C */
+
+/* LED CONSTANTS */
+#define ZERO                    0x007E
+#define ONE                     0x0030
+#define TWO                     0x006C
+#define THREE                   0x0079
+#define FOUR                    0x0033
+#define FIVE                    0x005B
+#define SIX                     0x005F
+#define SEVEN                   0x0070
+#define EIGHT                   0x00FF
+#define NINE                    0x007B
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */

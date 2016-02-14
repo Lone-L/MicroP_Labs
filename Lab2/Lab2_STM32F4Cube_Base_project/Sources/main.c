@@ -13,6 +13,7 @@
 #include "stm32f4xx_hal.h"
 #include "supporting_functions.h"
 #include "main.h"
+#include "Kalmanfilter.h"
 
 /* Private variables ---------------------------------------------------------*/
 
@@ -22,13 +23,20 @@ void initialize_ADC(void);
 
 /* Global variables ----------------------------------------------------------*/
 ADC_HandleTypeDef			ADC1_handle;
+GPIO_TypeDef					GPIOa;
+
 int										SYSTICK_READ_TEMP_FLAG = 0;	/* Set by Systick_Handler and unset in main */
+
+static float					filtered_temp;							/* Needs to be global to be displayed in the LogicAnalyser */
 
 int main(void)
 {
 	uint32_t v_sense;
 	float temperature;
-	
+	int counter = 0;
+	HAL_StatusTypeDef rc;
+	KalmanState kstate = {0.01, 0.3, 0.0, 0.1, 0.0};
+		
   /* MCU Configuration----------------------------------------------------------*/
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
@@ -36,13 +44,29 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 	
+	/* Initialize the ADC */
 	initialize_ADC();
+		
+	/* then call start */
+	if (HAL_ADC_Start(&ADC1_handle) != HAL_OK)
+		Error_Handler(ADC_INIT_FAIL);
 	
 	while (1) {
 		if (SYSTICK_READ_TEMP_FLAG == 1) {
-			v_sense = HAL_ADC_GetValue(&ADC1_handle);
-			temperature = ((float)v_sense - V_25) / AVG_SLOPE + TEMP_REF;	/* Formula for temperature from doc_05 p.230 */
-			printf("Temperature = %f\n", temperature);
+			if ((rc = HAL_ADC_PollForConversion(&ADC1_handle, 10000)) != HAL_OK)
+				printf("Error: %d\n", rc);
+			
+			v_sense = HAL_ADC_GetValue(&ADC1_handle);	/* Read register from the ADC */
+			temperature = v_sense * (3.3 / 4096);	/* Scale the reading into V (resolution is 12bits with VREF+ = 3.3V) */
+			temperature = (temperature - V_25) / AVG_SLOPE + TEMP_REF;	/* Formula for temperature from doc_05 p.230 */
+			
+			/* Grind through the Kalman filter */
+			if (Kalmanfilter_asm(&temperature, &filtered_temp, 1, &kstate) != 0)
+				printf("Overflow error\n");
+			
+//			filtered_temp = temperature;
+			printf("%d %f\n", counter, filtered_temp);
+			++counter;
 			SYSTICK_READ_TEMP_FLAG = 0;
 		}
 	}
@@ -89,13 +113,56 @@ void initialize_ADC(void)
 	
 	if (HAL_ADC_ConfigChannel(&ADC1_handle, &channel_config) != HAL_OK)
 		Error_Handler(ADC_CH_CONFIG_FAIL);
-	
-	/* then call start */
-	if (HAL_ADC_Start(&ADC1_handle) != HAL_OK)
-		Error_Handler(ADC_INIT_FAIL);
 }
 
 /* Hal MSP_Init */
+void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
+{
+	__ADC1_CLK_ENABLE();
+}
+
+/**
+   * @brief Initialize GPIO typedef struct
+   * @param None
+   * @retval None
+   */
+void initialize_GPIO(void)
+{
+	  GPIO_InitTypeDef SEGMENT_PINS;
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    
+    SEGMENT_PINS.Pin   = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11; // use 7 pins for segment display
+    // PIN 0 - 6  correspond to A-G 7-seg display ,
+    // PIN 7 - 10 from left correspond to the 4 displays
+    // PIN 11     the decimal point.
+    
+    SEGMENT_PINS.Mode  = GPIO_MODE_OUTPUT_PP;     // push pull mode
+    SEGMENT_PINS.Pull  = GPIO_NOPULL;             // pin is used as output to drive 7-seg display
+    SEGMENT_PINS.Speed = GPIO_SPEED_FREQ_MEDIUM;  // 12.5 MHz - 50 MHz?
+    
+    HAL_GPIO_Init(&GPIOa, &SEGMENT_PINS);
+    GPIOa.ODR = 0x0000;
+}
+
+/**
+   * @brief output float to 7 segment display
+   * @param float value - the value to display on segment display
+   * @retval None
+   */
+void display_segment_val(float val)
+{
+    static char SEG_CODES[] = {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE};
+    static uint16_t segment_number[] = {GPIO_PIN_7, GPIO_PIN_8, GPIO_PIN_9, GPIO_PIN_10};
+    int i;
+    int temp_val = ((int) val * 100 )% 10000; // get 4 digits from temp reading
+
+    for (i = 3; i >= 0; i--) {
+        
+        GPIOa.ODR = segment_number[i] | SEG_CODES[temp_val % 10];
+        temp_val = (int) temp_val / 10;
+        
+    }
+}
 
 /** System Clock Configuration */
 void SystemClock_Config(void)
@@ -124,8 +191,8 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider 	= RCC_HCLK_DIV2;
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5)!= HAL_OK){Error_Handler(RCC_CONFIG_FAIL);};
 	
-	/*Configures SysTick to provide 1ms interval interrupts.*/
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+	/*Configures SysTick to provide 100Hz interval interrupts.*/
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/100);
 
 	/* This function sets the source clock for the internal SysTick Timer to be the maximum,
 	   in our case, HCLK is now 168MHz*/
