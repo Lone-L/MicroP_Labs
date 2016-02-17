@@ -20,19 +20,21 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config	(void);
 void initialize_ADC(void);
+void initialize_GPIO(void);
+void display_segment_val(float val);
 
 /* Global variables ----------------------------------------------------------*/
 ADC_HandleTypeDef			ADC1_handle;
-GPIO_TypeDef					GPIOa;
 
 int										SYSTICK_READ_TEMP_FLAG = 0;	/* Set by Systick_Handler and unset in main */
 
 static float					filtered_temp;							/* Needs to be global to be displayed in the LogicAnalyser */
+static float					unfiltered_temp;
 
 int main(void)
 {
 	uint32_t v_sense;
-	float temperature;
+	float tempinvolts, temperature;
 	int counter = 0;
 	HAL_StatusTypeDef rc;
 	KalmanState kstate = {0.01, 0.3, 0.0, 0.1, 0.0};
@@ -44,9 +46,10 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 	
-	/* Initialize the ADC */
+	/* Initialize the ADC and GPIO */
 	initialize_ADC();
-		
+	initialize_GPIO();
+	
 	/* then call start */
 	if (HAL_ADC_Start(&ADC1_handle) != HAL_OK)
 		Error_Handler(ADC_INIT_FAIL);
@@ -57,15 +60,16 @@ int main(void)
 				printf("Error: %d\n", rc);
 			
 			v_sense = HAL_ADC_GetValue(&ADC1_handle);	/* Read register from the ADC */
-			temperature = v_sense * (3.3 / 4096);	/* Scale the reading into V (resolution is 12bits with VREF+ = 3.3V) */
-			temperature = (temperature - V_25) / AVG_SLOPE + TEMP_REF;	/* Formula for temperature from doc_05 p.230 */
+			tempinvolts = v_sense * (V_REF/4096);	/* Scale the reading into V (resolution is 12bits with VREF+ = 3.3V) */
+			temperature = (tempinvolts - V_25) / AVG_SLOPE + TEMP_REF;// + FUDGE_FACTOR;	/* Formula for temperature from doc_05 p.230 */
 			
 			/* Grind through the Kalman filter */
 			if (Kalmanfilter_asm(&temperature, &filtered_temp, 1, &kstate) != 0)
 				printf("Overflow error\n");
 			
-//			filtered_temp = temperature;
+			unfiltered_temp = temperature;
 			printf("%d %f\n", counter, filtered_temp);
+			//display_segment_val(filtered_temp);
 			++counter;
 			SYSTICK_READ_TEMP_FLAG = 0;
 		}
@@ -129,9 +133,9 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
 void initialize_GPIO(void)
 {
 	  GPIO_InitTypeDef SEGMENT_PINS;
-    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOE_CLK_ENABLE();
     
-    SEGMENT_PINS.Pin   = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11; // use 7 pins for segment display
+    SEGMENT_PINS.Pin   = GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15; // use 7 pins for segment display
     // PIN 0 - 6  correspond to A-G 7-seg display ,
     // PIN 7 - 10 from left correspond to the 4 displays
     // PIN 11     the decimal point.
@@ -140,8 +144,8 @@ void initialize_GPIO(void)
     SEGMENT_PINS.Pull  = GPIO_NOPULL;             // pin is used as output to drive 7-seg display
     SEGMENT_PINS.Speed = GPIO_SPEED_FREQ_MEDIUM;  // 12.5 MHz - 50 MHz?
     
-    HAL_GPIO_Init(&GPIOa, &SEGMENT_PINS);
-    GPIOa.ODR = 0x0000;
+    HAL_GPIO_Init(GPIOE, &SEGMENT_PINS);
+    GPIOE->ODR = 0xFFFF;
 }
 
 /**
@@ -151,16 +155,15 @@ void initialize_GPIO(void)
    */
 void display_segment_val(float val)
 {
-    static char SEG_CODES[] = {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE};
-    static uint16_t segment_number[] = {GPIO_PIN_7, GPIO_PIN_8, GPIO_PIN_9, GPIO_PIN_10};
+    static uint16_t SEG_CODES[] = {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE};
+    static uint16_t segment_number[] = {GPIO_PIN_7, GPIO_PIN_8, GPIO_PIN_9 | GPIO_PIN_11, GPIO_PIN_10};
     int i;
-    int temp_val = ((int) val * 100 )% 10000; // get 4 digits from temp reading
+    int temp_val = (int) (val * 10); // get 4 digits from temp reading
 
-    for (i = 3; i >= 0; i--) {
-        
-        GPIOa.ODR = segment_number[i] | SEG_CODES[temp_val % 10];
+    for (i = 2; i >= 0; i--) {
+        GPIOE->ODR = segment_number[i] | SEG_CODES[temp_val % 10];
         temp_val = (int) temp_val / 10;
-        
+        HAL_Delay(100);
     }
 }
 

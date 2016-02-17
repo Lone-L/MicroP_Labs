@@ -48,17 +48,22 @@
 #define AVG_SLOPE	((float)0.0025)	/* V/C, for temperature sensor calculation */
 #define TEMP_REF	((float)25.0)	/* C */
 
+#define V_REF			((float)3.0)	/* Volts */
+//#define FUDGE_FACTOR	((float)(-30.0))
+//#define VTEMP_MAX		((float)3.6)	/* Volts */
+//#define VTEMP_MIN		((float)1.8)	/* Volts */
+	
 /* LED CONSTANTS */
-#define ZERO                    0x007E
-#define ONE                     0x0030
-#define TWO                     0x006C
-#define THREE                   0x0079
-#define FOUR                    0x0033
-#define FIVE                    0x005B
-#define SIX                     0x005F
-#define SEVEN                   0x0070
-#define EIGHT                   0x00FF
-#define NINE                    0x007B
+#define ZERO                    (0x007E << 4)
+#define ONE                     (0x0030 << 4)
+#define TWO                     (0x006C << 4)
+#define THREE                   (0x0079 << 4)
+#define FOUR                    (0x0033 << 4)
+#define FIVE                    (0x005B << 4)
+#define SIX                     (0x005F << 4)
+#define SEVEN                   (0x0070 << 4)
+#define EIGHT                   (0x007F << 4)
+#define NINE                    (0x007B << 4)
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
