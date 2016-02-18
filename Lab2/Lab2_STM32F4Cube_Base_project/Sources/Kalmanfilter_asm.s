@@ -23,7 +23,7 @@ Kalmanfilter_asm
 	MOV				R5, R1							; current address in filtered
 	MOV				R6, R0							; current address in input array
 
-	LSL R4, R2, 2
+	LSL R4, R2, #2
 	ADD R4, R4, R5
 
 loop
