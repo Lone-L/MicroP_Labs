@@ -16,20 +16,20 @@
 #include "Kalmanfilter.h"
 
 /* Private variables ---------------------------------------------------------*/
+static float					filtered_temp;											/* Needs to be global to be displayed in the LogicAnalyser */
+static float					unfiltered_temp;
+static float					displayed_segment_value;						/* Value currently being displayed on the 7-segment screen. */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config	(void);
 void initialize_ADC(void);
 void initialize_GPIO(void);
-void display_segment_val(float val);
+void display_segment_val(void);
 
 /* Global variables ----------------------------------------------------------*/
 ADC_HandleTypeDef			ADC1_handle;
-
-int										SYSTICK_READ_TEMP_FLAG = 0;	/* Set by Systick_Handler and unset in main */
-
-static float					filtered_temp;							/* Needs to be global to be displayed in the LogicAnalyser */
-static float					unfiltered_temp;
+int										SYSTICK_READ_TEMP_FLAG = 0;					/* Set by Systick_Handler and unset in main */
+int										SYSTICK_DISPLAY_SEGMENT_FLAG = 0;		/* Set by Systick_Handler and unset in main */
 
 int main(void)
 {
@@ -60,7 +60,7 @@ int main(void)
 				printf("Error: %d\n", rc);
 			
 			v_sense = HAL_ADC_GetValue(&ADC1_handle);	/* Read register from the ADC */
-			tempinvolts = v_sense * (V_REF/4096);	/* Scale the reading into V (resolution is 12bits with VREF+ = 3.3V) */
+			tempinvolts = v_sense * (V_REF / 4096);	/* Scale the reading into V (resolution is 12bits with VREF+ = 3.3V) */
 			temperature = (tempinvolts - V_25) / AVG_SLOPE + TEMP_REF;// + FUDGE_FACTOR;	/* Formula for temperature from doc_05 p.230 */
 			
 			/* Grind through the Kalman filter */
@@ -68,10 +68,20 @@ int main(void)
 				printf("Overflow error\n");
 			
 			unfiltered_temp = temperature;
-			printf("%d %f\n", counter, filtered_temp);
-			//display_segment_val(filtered_temp);
+//			printf("%d %f\n", counter, filtered_temp);
+			
+			/* Display only once out of this many times the 7-segment display */
+			if (counter % 30 == 0)
+				displayed_segment_value = filtered_temp;
+			
 			++counter;
-			SYSTICK_READ_TEMP_FLAG = 0;
+			SYSTICK_READ_TEMP_FLAG = 0;	/* Reset the flag */
+		}
+		
+		/* Systick_Handler triggers the flag once every 50ms */
+		if (SYSTICK_DISPLAY_SEGMENT_FLAG == 1) {
+			display_segment_val();
+			SYSTICK_DISPLAY_SEGMENT_FLAG = 0;
 		}
 	}
 }
@@ -145,26 +155,32 @@ void initialize_GPIO(void)
     SEGMENT_PINS.Speed = GPIO_SPEED_FREQ_MEDIUM;  // 12.5 MHz - 50 MHz?
     
     HAL_GPIO_Init(GPIOE, &SEGMENT_PINS);
-    GPIOE->ODR = 0xFFFF;
 }
 
 /**
-   * @brief output float to 7 segment display
-   * @param float value - the value to display on segment display
+   * @brief output global displayed_segment_value float to 7 segment display
+   * @param None
    * @retval None
    */
-void display_segment_val(float val)
+void display_segment_val(void)
 {
     static uint16_t SEG_CODES[] = {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE};
-    static uint16_t segment_number[] = {GPIO_PIN_7, GPIO_PIN_8, GPIO_PIN_9 | GPIO_PIN_11, GPIO_PIN_10};
-    int i;
-    int temp_val = (int) (val * 10); // get 4 digits from temp reading
+    static uint16_t segment_number[] = {GPIO_PIN_11, GPIO_PIN_12 | GPIO_PIN_15, GPIO_PIN_13, GPIO_PIN_14};
+		static int segment = 0; /* Keep track of current segment to be turned on */
+		int int_value;					/* Example: 12.3 would be converted to 123, keeping track of the tenths */
+    int digit;							/* Digit to display on the segment */
 
-    for (i = 2; i >= 0; i--) {
-        GPIOE->ODR = segment_number[i] | SEG_CODES[temp_val % 10];
-        temp_val = (int) temp_val / 10;
-        HAL_Delay(100);
-    }
+		int_value = (int)(displayed_segment_value * 10);
+		
+		switch (segment) {
+			case 2: digit = int_value % 10; break;
+			case 1: digit = (int_value / 10) % 10; break;
+			case 0: digit = (int_value / 100); break;
+		}
+		
+//		printf("segment, digit = %d, %d\n", segment, digit);
+    GPIOE->ODR = segment_number[segment] | SEG_CODES[digit];
+    segment = (segment + 1) % 3;
 }
 
 /** System Clock Configuration */
@@ -194,8 +210,8 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider 	= RCC_HCLK_DIV2;
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5)!= HAL_OK){Error_Handler(RCC_CONFIG_FAIL);};
 	
-	/*Configures SysTick to provide 100Hz interval interrupts.*/
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/100);
+	/*Configures SysTick to provide 200Hz interval interrupts. (Read ADC once in two times)*/
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/500);
 
 	/* This function sets the source clock for the internal SysTick Timer to be the maximum,
 	   in our case, HCLK is now 168MHz*/

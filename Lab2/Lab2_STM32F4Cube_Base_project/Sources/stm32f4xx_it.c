@@ -155,8 +155,18 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
+		static int read_once = 0;
+	
 		HAL_IncTick();
-		SYSTICK_READ_TEMP_FLAG = 1;
+	
+		if (read_once == 0) {
+			SYSTICK_READ_TEMP_FLAG = 1;
+			read_once = 1;
+		} else {
+			read_once = 0;
+		}
+		
+		SYSTICK_DISPLAY_SEGMENT_FLAG = 1;
 }
 
 /******************************************************************************/
