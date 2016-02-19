@@ -24,6 +24,7 @@ static float					displayed_segment_value;						/* Value currently being displaye
 void SystemClock_Config	(void);
 void initialize_ADC(void);
 void initialize_GPIO(void);
+void initialize_LCD(void);
 void display_segment_val(void);
 void toggle_LEDs(void);
 void turn_off_LEDs(void);
@@ -50,9 +51,10 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 	
-	/* Initialize the ADC and GPIO */
+	/* Initialize the ADC and GPIO and LCD display */
 	initialize_ADC();
 	initialize_GPIO();
+	initialize_LCD();
 	
 	/* then call start */
 	if (HAL_ADC_Start(&ADC1_handle) != HAL_OK)
@@ -208,18 +210,28 @@ void initialize_GPIO(void)
 		HAL_GPIO_Init(GPIOD, &LED_PINS_D);
     HAL_GPIO_Init(GPIOE, &SEGMENT_PINS_E);
 		
-		/* Initialization sequence from
-		 * http://www.protostack.com/blog/2010/03/character-lcd-displays-part-1/ */
+
+}
+
+/**
+   * @brief Initializes the LCD display
+	 * @param None
+   * @retval None
+   */
+void initialize_LCD(void)
+{
+	/* Initialization sequence from
+	 * http://www.protostack.com/blog/2010/03/character-lcd-displays-part-1/ */
 		
-		/* Clear the display */
-		SET_B_LINE(GPIOB->ODR, 0, 0, 0);
-		SET_D_LINE(GPIOC->ODR, 0x00);
-		DELAY(CMD_DELAY)
-		SET_D_LINE(GPIOC->ODR, 0x01);
-		SET_B_LINE(GPIOB->ODR, 1, 0, 0);
-		DELAY(CMD_DELAY)
-		SET_B_LINE(GPIOB->ODR, 0, 0, 0);
-		HAL_Delay(15);
+	/* Clear the display */
+	SET_B_LINE(GPIOB->ODR, 0, 0, 0);
+	SET_D_LINE(GPIOC->ODR, 0x00);
+	DELAY(CMD_DELAY)
+	SET_D_LINE(GPIOC->ODR, 0x01);
+	SET_B_LINE(GPIOB->ODR, 1, 0, 0);
+	DELAY(CMD_DELAY)
+	SET_B_LINE(GPIOB->ODR, 0, 0, 0);
+	HAL_Delay(15);
 		
 		/* Reset cursor */
 //		SET_D_LINE(GPIOC->ODR, 0x02);
@@ -227,24 +239,26 @@ void initialize_GPIO(void)
 //		DELAY(CMD_DELAY)
 //		SET_B_LINE(GPIOB->ODR, 0, 0, 0);
 //		HAL_Delay(15);
-		
-		SET_D_LINE(GPIOC->ODR, 0x38);
-		SET_B_LINE(GPIOB->ODR, 1, 0, 0);
-		DELAY(CMD_DELAY)
-		SET_B_LINE(GPIOB->ODR, 0, 0, 0);
-		HAL_Delay(CMD_DELAY);
-		
-		SET_D_LINE(GPIOC->ODR, 0x0c);
-		SET_B_LINE(GPIOB->ODR, 1, 0, 0);
-		DELAY(CMD_DELAY)
-		SET_B_LINE(GPIOB->ODR, 0, 0, 0);
-		HAL_Delay(CMD_DELAY);
-		
-		SET_D_LINE(GPIOC->ODR, 0x06);
-		SET_B_LINE(GPIOB->ODR, 1, 0, 0);
-		DELAY(CMD_DELAY)
-		SET_B_LINE(GPIOB->ODR, 0, 0, 0);
-		HAL_Delay(CMD_DELAY);
+	
+	/* Set function mode 2 line */
+	SET_D_LINE(GPIOC->ODR, 0x38);
+	SET_B_LINE(GPIOB->ODR, 1, 0, 0);
+	DELAY(CMD_DELAY)
+	SET_B_LINE(GPIOB->ODR, 0, 0, 0);
+	DELAY(CMD_DELAY);
+	
+	/* Display On */
+	SET_D_LINE(GPIOC->ODR, 0x0c);
+	SET_B_LINE(GPIOB->ODR, 1, 0, 0);
+	DELAY(CMD_DELAY)
+	SET_B_LINE(GPIOB->ODR, 0, 0, 0);
+	DELAY(CMD_DELAY);
+
+	SET_D_LINE(GPIOC->ODR, 0x06);
+	SET_B_LINE(GPIOB->ODR, 1, 0, 0);
+	DELAY(CMD_DELAY)
+	SET_B_LINE(GPIOB->ODR, 0, 0, 0);
+	DELAY(CMD_DELAY);
 }
 
 /**

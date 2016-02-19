@@ -870,16 +870,15 @@ ARM Macro Assembler    Page 14
               00000000 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
 erwork --depend=.\objects\startup_stm32f407xx.d -o.\objects\startup_stm32f407xx
-.o -I"\campus.mcgill.ca\EMF\ELE\gsavad\My Documents\Microprocessor Systems\Micr
-oP_Labs\Lab2\Lab2_STM32F4Cube_Base_project2\RTE" -I"\campus.mcgill.ca\EMF\ELE\g
-savad\My Documents\Microprocessor Systems\MicroP_Labs\Lab2\Lab2_STM32F4Cube_Bas
-e_project2\RTE\Device\STM32F407VGTx" -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\4.5.0\CMSI
-S\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\CMSIS\Device\S
-T\STM32F4xx\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\STM3
-2F4xx_HAL_Driver\Inc --predefine="__MICROLIB SETA 1" --predefine="__UVISION_VER
-SION SETA 515" --predefine="_RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --li
-st=.\listings\startup_stm32f407xx.lst RTE\Device\STM32F407VGTx\startup_stm32f40
-7xx.s
+.o -I"H:\My Documents\Microprocessor Systems\MicroP_Labs\Lab2\Lab2_STM32F4Cube_
+Base_project2\RTE" -I"H:\My Documents\Microprocessor Systems\MicroP_Labs\Lab2\L
+ab2_STM32F4Cube_Base_project2\RTE\Device\STM32F407VGTx" -IC:\Keil_v5\ARM\PACK\A
+RM\CMSIS\4.5.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Dri
+vers\CMSIS\Device\ST\STM32F4xx\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP
+\2.7.0\Drivers\STM32F4xx_HAL_Driver\Inc --predefine="__MICROLIB SETA 1" --prede
+fine="__UVISION_VERSION SETA 515" --predefine="_RTE_ SETA 1" --predefine="STM32
+F407xx SETA 1" --list=.\listings\startup_stm32f407xx.lst RTE\Device\STM32F407VG
+Tx\startup_stm32f407xx.s
 
 
 
