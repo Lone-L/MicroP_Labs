@@ -80,7 +80,7 @@ A (A   SEGMENT   ): BIT 4  => GPIO_PIN_4
 // SET BITS ENABLE (E), READ/WRITE (RW), RS 
 #define SET_B_LINE(X, E, RW, RS) ((X) = ((GET_BIT((X), 15) << 15) | (GET_BIT((X), 14) << 14) | (GET_BIT((X), 13) << 13) | (GET_BIT((X), 12) << 12) | (GET_BIT((X), 11) << 11) | (GET_BIT((X), 10) << 10) | (GET_BIT((X), 9) << 9) | (GET_BIT((X), 8) << 8) | (GET_BIT((X), 7) << 7) | (GET_BIT((X), 6) << 6) | (GET_BIT((X), 5) << 5) | (GET_BIT((X), 4) << 4) | (GET_BIT((X), 3) << 3) | ((E) << 2) | ((RW) << 1) | ((RS) << 0)))
 #define DELAY(US) {int i; for(i = 0; i < (int) ((US) * 168); i++){}}
-#define CMD_DELAY 100
+#define CMD_DELAY 37
 #define CLEAR_DISP_DELAY 1520
 
 #define ZERO                    (0x03F0)
@@ -94,7 +94,7 @@ A (A   SEGMENT   ): BIT 4  => GPIO_PIN_4
 #define EIGHT                   (0x07F0)
 #define NINE                    (0x06F0)
 
-#define SEGMENT_DISPLAY_PERIOD					30				/* How many temperature readings are skipped to display one on the 7-segment display */
+#define SEGMENT_DISPLAY_PERIOD					50				/* How many temperature readings are skipped to display one on the 7-segment display */
 #define ALARM_LED_TOGGLE_PERIOD					60				/* How many temperature readings are taken to display one LED during alarm toggle */
 #define THRESHOLD_TEMP					((float)36.0)			/* Temperature threshold above which overheating alarm is triggered */
 #define LOWER_THRESHOLD_TEMP		((float)35.0)			/* When alarm is activated, wait until temperature goes below this value beform turning off alarm. */

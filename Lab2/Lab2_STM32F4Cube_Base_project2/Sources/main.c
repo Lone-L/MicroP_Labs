@@ -28,6 +28,7 @@ void display_segment_val(void);
 void toggle_LEDs(void);
 void turn_off_LEDs(void);
 void display_LCD_num(float num);
+
 /* Global variables ----------------------------------------------------------*/
 ADC_HandleTypeDef			ADC1_handle;
 int										SYSTICK_READ_TEMP_FLAG = 0;					/* Set by Systick_Handler to read temperature from ADC */
@@ -74,8 +75,10 @@ int main(void)
 //			printf("%d %f\n", counter, filtered_temp);
 			
 			/* Display only once out of this many times the 7-segment display */
-			if (counter % SEGMENT_DISPLAY_PERIOD == 0)
+			if (counter % SEGMENT_DISPLAY_PERIOD == 0) {
 				displayed_segment_value = filtered_temp;
+				display_LCD_num(filtered_temp);
+			}
 			
 			if (ALARM_TRIGGERED_FLAG == 1) {
 				/* Avoid spurious noise by waiting for a lower threshold before turning off alarm */
@@ -102,7 +105,6 @@ int main(void)
 			display_segment_val();
 			SYSTICK_DISPLAY_SEGMENT_FLAG = 0;
 		}
-		display_LCD_num(10.10);
 	}
 }
 
@@ -206,44 +208,77 @@ void initialize_GPIO(void)
 		HAL_GPIO_Init(GPIOD, &LED_PINS_D);
     HAL_GPIO_Init(GPIOE, &SEGMENT_PINS_E);
 		
-	SET_D_LINE(GPIOC->ODR, 0x01);
-	SET_B_LINE(GPIOB->ODR, 1, 0, 0);
-	DELAY(CMD_DELAY)
-	SET_B_LINE(GPIOB->ODR, 0, 0, 0);
-	HAL_Delay(15);
+		/* Initialization sequence from
+		 * http://www.protostack.com/blog/2010/03/character-lcd-displays-part-1/ */
 		
-}
-
-
-void display_LCD_num(float num) 
-{
-	char buffer[5];
-	int j;
-	snprintf(buffer, sizeof buffer, "%.1f", num);
-	 
-	/* Reset cursor to initial position */
-//	SET_D_LINE(GPIOC->ODR, 0x02);
-//	DELAY(CMD_DELAY)
-//	SET_B_LINE(GPIOB->ODR, 1, 0, 0);
-//	DELAY(CMD_DELAY)
-//	SET_B_LINE(GPIOB->ODR, 0, 0, 0);
-//	DELAY(CMD_DELAY)
-	
-	SET_D_LINE(GPIOC->ODR, 0x0F);
-	printf("%04x\n", GPIOC->ODR);
-	SET_B_LINE(GPIOB->ODR, 1, 0, 0);
-	DELAY(CMD_DELAY)
-	SET_B_LINE(GPIOB->ODR, 0, 0, 0);
-	DELAY(CMD_DELAY)
-	
-//	for (j = 0; j < sizeof(buffer) - 1; j++ ){
-//		SET_D_LINE(GPIOC->ODR, buffer[j]);
-//		SET_B_LINE(GPIOB->ODR, 1, 0, 1);
+		/* Clear the display */
+		SET_B_LINE(GPIOB->ODR, 0, 0, 0);
+		SET_D_LINE(GPIOC->ODR, 0x00);
+		DELAY(CMD_DELAY)
+		SET_D_LINE(GPIOC->ODR, 0x01);
+		SET_B_LINE(GPIOB->ODR, 1, 0, 0);
+		DELAY(CMD_DELAY)
+		SET_B_LINE(GPIOB->ODR, 0, 0, 0);
+		HAL_Delay(15);
+		
+		/* Reset cursor */
+//		SET_D_LINE(GPIOC->ODR, 0x02);
+//		SET_B_LINE(GPIOB->ODR, 1, 0, 0);
 //		DELAY(CMD_DELAY)
 //		SET_B_LINE(GPIOB->ODR, 0, 0, 0);
-//		DELAY(CMD_DELAY)
-//	}
+//		HAL_Delay(15);
+		
+		SET_D_LINE(GPIOC->ODR, 0x38);
+		SET_B_LINE(GPIOB->ODR, 1, 0, 0);
+		DELAY(CMD_DELAY)
+		SET_B_LINE(GPIOB->ODR, 0, 0, 0);
+		HAL_Delay(CMD_DELAY);
+		
+		SET_D_LINE(GPIOC->ODR, 0x0c);
+		SET_B_LINE(GPIOB->ODR, 1, 0, 0);
+		DELAY(CMD_DELAY)
+		SET_B_LINE(GPIOB->ODR, 0, 0, 0);
+		HAL_Delay(CMD_DELAY);
+		
+		SET_D_LINE(GPIOC->ODR, 0x06);
+		SET_B_LINE(GPIOB->ODR, 1, 0, 0);
+		DELAY(CMD_DELAY)
+		SET_B_LINE(GPIOB->ODR, 0, 0, 0);
+		HAL_Delay(CMD_DELAY);
 }
+
+/**
+   * @brief Prints float value on the LCD display
+	 * @param float num: value to be displayed
+   * @retval None
+   */
+void display_LCD_num(float num) 
+{
+	char buffer[6];
+	int j;
+	snprintf(buffer, sizeof buffer, "%.1f", num);
+	buffer[4] = 0xdf;
+	buffer[5] = 'A';
+	
+	/* Reset cursor to initial position */
+	DELAY(CMD_DELAY)
+	SET_D_LINE(GPIOC->ODR, 0x02);
+	DELAY(CMD_DELAY)
+	SET_B_LINE(GPIOB->ODR, 1, 0, 0);
+	DELAY(CMD_DELAY)
+	SET_B_LINE(GPIOB->ODR, 0, 0, 0);
+	DELAY(CMD_DELAY)
+	
+	/* Print each character on the screen */
+	for (j = 0; j < sizeof(buffer); j++ ){
+		SET_D_LINE(GPIOC->ODR, buffer[j]);
+		SET_B_LINE(GPIOB->ODR, 1, 0, 1);
+		DELAY(CMD_DELAY)
+		SET_B_LINE(GPIOB->ODR, 0, 0, 0);
+		DELAY(CMD_DELAY)
+	}
+}
+
 /**
    * @brief alternate toggling of the 4 LEDs used for alarm display
    * @param None

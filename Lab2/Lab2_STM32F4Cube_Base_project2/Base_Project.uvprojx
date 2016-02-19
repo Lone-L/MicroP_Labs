@@ -437,6 +437,11 @@
               <FileType>2</FileType>
               <FilePath>.\Sources\Kalmanfilter_asm.s</FilePath>
             </File>
+            <File>
+              <FileName>stm32f4xx_hal_conf.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>H:\My Documents\Microprocessor Systems\MicroP_Labs\Lab2\Lab2_STM32F4Cube_Base_project2\RTE\Device\STM32F407VGTx\stm32f4xx_hal_conf.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
