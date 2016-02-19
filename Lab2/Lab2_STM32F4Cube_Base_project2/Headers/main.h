@@ -74,6 +74,15 @@ A (A   SEGMENT   ): BIT 4  => GPIO_PIN_4
 
 */
 
+#define GET_BIT(X, n) (((X) >> (n)) & 0x1)
+// SET THE DATA BITS FOR THE LCD SCREEN
+#define SET_D_LINE(X, bits)      ((X) = ((GET_BIT((X), 0) << 0) |(GET_BIT((bits), 0) << 1) | (GET_BIT((bits), 1) << 2) | (GET_BIT((X), 3) << 3) | (GET_BIT((bits), 2) << 4) | (GET_BIT((bits), 3) << 5) | (GET_BIT((bits), 4) << 6) | (GET_BIT((X), 7) << 7) | (GET_BIT((bits), 5) << 8) | (GET_BIT((bits), 6) << 9) | (GET_BIT((bits), 7) << 11) | (GET_BIT((X), 12) << 12) | (GET_BIT((X), 13) << 13) | (GET_BIT((X), 14) << 14) | (GET_BIT((X), 15) << 15)))
+// SET BITS ENABLE (E), READ/WRITE (RW), RS 
+#define SET_B_LINE(X, E, RW, RS) ((X) = ((GET_BIT((X), 15) << 15) | (GET_BIT((X), 14) << 14) | (GET_BIT((X), 13) << 13) | (GET_BIT((X), 12) << 12) | (GET_BIT((X), 11) << 11) | (GET_BIT((X), 10) << 10) | (GET_BIT((X), 9) << 9) | (GET_BIT((X), 8) << 8) | (GET_BIT((X), 7) << 7) | (GET_BIT((X), 6) << 6) | (GET_BIT((X), 5) << 5) | (GET_BIT((X), 4) << 4) | (GET_BIT((X), 3) << 3) | ((E) << 2) | ((RW) << 1) | ((RS) << 0)))
+#define DELAY(US) {int i; for(i = 0; i < (int) ((US) * 168); i++){}}
+#define CMD_DELAY 100
+#define CLEAR_DISP_DELAY 1520
+
 #define ZERO                    (0x03F0)
 #define ONE                     (0x0060)
 #define TWO                     (0x05B0) //0000 0ABC DEFG 0000 => 0000 0GFE DCBA 0000

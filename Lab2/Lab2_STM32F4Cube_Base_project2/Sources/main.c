@@ -27,7 +27,7 @@ void initialize_GPIO(void);
 void display_segment_val(void);
 void toggle_LEDs(void);
 void turn_off_LEDs(void);
-
+void display_LCD_num(float num);
 /* Global variables ----------------------------------------------------------*/
 ADC_HandleTypeDef			ADC1_handle;
 int										SYSTICK_READ_TEMP_FLAG = 0;					/* Set by Systick_Handler to read temperature from ADC */
@@ -102,6 +102,7 @@ int main(void)
 			display_segment_val();
 			SYSTICK_DISPLAY_SEGMENT_FLAG = 0;
 		}
+		display_LCD_num(10.10);
 	}
 }
 
@@ -161,27 +162,88 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
    */
 void initialize_GPIO(void)
 {
-	  GPIO_InitTypeDef SEGMENT_PINS_E, SEGMENT_PINS_D;
+	  GPIO_InitTypeDef SEGMENT_PINS_E, LED_PINS_D, LCD_PINS_C, LCD_PINS_B;
     __HAL_RCC_GPIOE_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
+		__HAL_RCC_GPIOB_CLK_ENABLE();
+	  __HAL_RCC_GPIOC_CLK_ENABLE();
 	
-		SEGMENT_PINS_D.Pin	 = GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15; // LEDs are LD3:PD13, LD4:PD12, LD5:PD14, LD6:PD15
-    SEGMENT_PINS_E.Pin   = GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15; // use 7 pins for segment display
+		LCD_PINS_B.Pin       = GPIO_PIN_0  | GPIO_PIN_1  | GPIO_PIN_2;
+		// GPIO_PIN_0 <= RS  | GPIO_PIN_1 <= R/W | GPIO_PIN_2 <= E 
+		// 
+		LCD_PINS_B.Mode  = GPIO_MODE_OUTPUT_PP;     // push pull mode
+    LCD_PINS_B.Pull  = GPIO_NOPULL;             // pin is used as output to drive 7-seg display
+    LCD_PINS_B.Speed = GPIO_SPEED_FREQ_MEDIUM;  // 12.5 MHz - 50 MHz?
+	
+	
+		LCD_PINS_C.Pin       = GPIO_PIN_1  | GPIO_PIN_2  | GPIO_PIN_4  | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_11;
+		// GPIO_PIN_1,2,4-9, 11 <= D0 - D7
+		LCD_PINS_C.Mode  = GPIO_MODE_OUTPUT_PP;     // push pull mode
+    LCD_PINS_C.Pull  = GPIO_NOPULL;             // pin is used as output to drive 7-seg display
+    LCD_PINS_C.Speed = GPIO_SPEED_FREQ_MEDIUM;  // 12.5 MHz - 50 MHz?
+	
+	
+		LED_PINS_D.Pin	     = GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15; // LEDs are LD3:PD13, LD4:PD12, LD5:PD14, LD6:PD15
+	
+		LED_PINS_D.Mode  = GPIO_MODE_OUTPUT_PP;     // push pull mode
+    LED_PINS_D.Pull  = GPIO_NOPULL;             // pin is used as output to drive 7-seg display
+    LED_PINS_D.Speed = GPIO_SPEED_FREQ_MEDIUM;  // 12.5 MHz - 50 MHz?
+	
+
+
+		SEGMENT_PINS_E.Pin   = GPIO_PIN_4  | GPIO_PIN_5  | GPIO_PIN_6  | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15; // use 7 pins for segment display
 		// PIN 0 - 6  correspond to A-G 7-seg display ,
     // PIN 7 - 10 from left correspond to the 4 displays
     // PIN 11     the decimal point.
     
-	  SEGMENT_PINS_D.Mode  = GPIO_MODE_OUTPUT_PP;     // push pull mode
-    SEGMENT_PINS_D.Pull  = GPIO_NOPULL;             // pin is used as output to drive 7-seg display
-    SEGMENT_PINS_D.Speed = GPIO_SPEED_FREQ_MEDIUM;  // 12.5 MHz - 50 MHz?
+
     SEGMENT_PINS_E.Mode  = GPIO_MODE_OUTPUT_PP;     // push pull mode
     SEGMENT_PINS_E.Pull  = GPIO_NOPULL;             // pin is used as output to drive 7-seg display
     SEGMENT_PINS_E.Speed = GPIO_SPEED_FREQ_MEDIUM;  // 12.5 MHz - 50 MHz?
     
-		HAL_GPIO_Init(GPIOD, &SEGMENT_PINS_D);
+		HAL_GPIO_Init(GPIOB, &LCD_PINS_B);
+		HAL_GPIO_Init(GPIOC, &LCD_PINS_C);
+		HAL_GPIO_Init(GPIOD, &LED_PINS_D);
     HAL_GPIO_Init(GPIOE, &SEGMENT_PINS_E);
+		
+	SET_D_LINE(GPIOC->ODR, 0x01);
+	SET_B_LINE(GPIOB->ODR, 1, 0, 0);
+	DELAY(CMD_DELAY)
+	SET_B_LINE(GPIOB->ODR, 0, 0, 0);
+	HAL_Delay(15);
+		
 }
 
+
+void display_LCD_num(float num) 
+{
+	char buffer[5];
+	int j;
+	snprintf(buffer, sizeof buffer, "%.1f", num);
+	 
+	/* Reset cursor to initial position */
+//	SET_D_LINE(GPIOC->ODR, 0x02);
+//	DELAY(CMD_DELAY)
+//	SET_B_LINE(GPIOB->ODR, 1, 0, 0);
+//	DELAY(CMD_DELAY)
+//	SET_B_LINE(GPIOB->ODR, 0, 0, 0);
+//	DELAY(CMD_DELAY)
+	
+	SET_D_LINE(GPIOC->ODR, 0x0F);
+	printf("%04x\n", GPIOC->ODR);
+	SET_B_LINE(GPIOB->ODR, 1, 0, 0);
+	DELAY(CMD_DELAY)
+	SET_B_LINE(GPIOB->ODR, 0, 0, 0);
+	DELAY(CMD_DELAY)
+	
+//	for (j = 0; j < sizeof(buffer) - 1; j++ ){
+//		SET_D_LINE(GPIOC->ODR, buffer[j]);
+//		SET_B_LINE(GPIOB->ODR, 1, 0, 1);
+//		DELAY(CMD_DELAY)
+//		SET_B_LINE(GPIOB->ODR, 0, 0, 0);
+//		DELAY(CMD_DELAY)
+//	}
+}
 /**
    * @brief alternate toggling of the 4 LEDs used for alarm display
    * @param None
@@ -191,8 +253,8 @@ void toggle_LEDs(void)
 {
 		static int LEDS[] = {GPIO_PIN_13, GPIO_PIN_14, GPIO_PIN_15, GPIO_PIN_12};
 		static int led = 0;
-		
-		GPIOD->ODR = LEDS[led];	/* Note: we currently use Port D only for the LEDs, but otherwise we should only
+		GPIOD->ODR = GPIOD->ODR & 0x0FFF;
+		GPIOD->ODR = GPIOD->ODR | LEDS[led];	/* Note: we currently use Port D only for the LEDs, but otherwise we should only
 																			update the bits that concern us, not to overwrite other pins! */
 		
 		led = (led + 1) % 4;
@@ -205,7 +267,7 @@ void toggle_LEDs(void)
    */
 void turn_off_LEDs(void)
 {
-		GPIOD->ODR = 0;
+		GPIOD->ODR = GPIOD->ODR & 0x0FFF;
 }
 
 /**
@@ -230,7 +292,8 @@ void display_segment_val(void)
 		}
 		
 //		printf("segment, digit = %d, %d\n", segment, digit);
-    GPIOE->ODR = segment_number[segment] | SEG_CODES[digit];
+		GPIOE->ODR = GPIOE->ODR & 0x000F;
+    GPIOE->ODR = GPIOE->ODR | (segment_number[segment] | SEG_CODES[digit]);
     segment = (segment + 1) % 3;
 }
 
