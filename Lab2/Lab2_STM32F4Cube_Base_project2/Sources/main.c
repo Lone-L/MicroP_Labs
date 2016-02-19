@@ -67,7 +67,7 @@ int main(void)
 			
 			v_sense = HAL_ADC_GetValue(&ADC1_handle);	/* Read register from the ADC */
 			tempinvolts = v_sense * (V_REF / 4096);	/* Scale the reading into V (resolution is 12bits with VREF+ = 3.3V) */
-			temperature = (tempinvolts - V_25) / AVG_SLOPE + TEMP_REF;// + FUDGE_FACTOR;	/* Formula for temperature from doc_05 p.230 */
+			temperature = (tempinvolts - V_25) / AVG_SLOPE + TEMP_REF + FUDGE_FACTOR;	/* Formula for temperature from doc_05 p.230 */
 			
 			/* Grind through the Kalman filter */
 			if (Kalmanfilter_asm(&temperature, &filtered_temp, 1, &kstate) != 0)
@@ -98,6 +98,7 @@ int main(void)
 					toggle_LEDs();
 			}
 			
+			printf("%f, %f\n", unfiltered_temp, filtered_temp);
 			++counter;
 			SYSTICK_READ_TEMP_FLAG = 0;	/* Reset the flag */
 		}
@@ -135,7 +136,7 @@ void initialize_ADC(void)
 	ADC1_handle.Init.DiscontinuousConvMode = DISABLE;						/* why discontinuous? */
 	/* don't even bother with NbrOfDiscConversion */
 	ADC1_handle.Init.ExternalTrigConv = ADC_SOFTWARE_START;			/* Disable external trigger */
-	
+	ADC1_handle.Init.ExternalTrigConvEdge = ADC_SOFTWARE_START;
 	/* We don't know what the NbrOfCurrentConversionRank */
 	/* Don't know about the rest either... */
 	

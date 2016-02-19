@@ -49,7 +49,7 @@
 #define TEMP_REF	((float)25.0)	/* C */
 
 #define V_REF			((float)3.0)	/* Volts */
-//#define FUDGE_FACTOR	((float)(-30.0))
+#define FUDGE_FACTOR	((float)(-12.0))
 //#define VTEMP_MAX		((float)3.6)	/* Volts */
 //#define VTEMP_MIN		((float)1.8)	/* Volts */
 	
@@ -96,8 +96,8 @@ A (A   SEGMENT   ): BIT 4  => GPIO_PIN_4
 
 #define SEGMENT_DISPLAY_PERIOD					50				/* How many temperature readings are skipped to display one on the 7-segment display */
 #define ALARM_LED_TOGGLE_PERIOD					60				/* How many temperature readings are taken to display one LED during alarm toggle */
-#define THRESHOLD_TEMP					((float)36.0)			/* Temperature threshold above which overheating alarm is triggered */
-#define LOWER_THRESHOLD_TEMP		((float)35.0)			/* When alarm is activated, wait until temperature goes below this value beform turning off alarm. */
+#define THRESHOLD_TEMP					((float)27.0)			/* Temperature threshold above which overheating alarm is triggered */
+#define LOWER_THRESHOLD_TEMP		((float)26.0)			/* When alarm is activated, wait until temperature goes below this value beform turning off alarm. */
 	
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */

@@ -33,7 +33,7 @@ ARM Macro Assembler    Page 1
    24 0000001C 4606            MOV              R6, R0      ; current address i
                                                             n input array
    25 0000001E         
-   26 0000001E EA4F 0482       LSL              R4, R2, 2
+   26 0000001E EA4F 0482       LSL              R4, R2, #2
    27 00000022 442C            ADD              R4, R4, R5
    28 00000024         
    29 00000024         loop
