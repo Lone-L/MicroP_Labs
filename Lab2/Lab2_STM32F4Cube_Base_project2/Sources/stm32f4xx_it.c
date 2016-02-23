@@ -155,15 +155,15 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
-		static int read_once = 0;	/* Set READ_TEMP_FLAG only once in two calls of this function */
+		static int read_every_5 = 1;	/* Set READ_TEMP_FLAG only once in 5 calls of this function */
 	
 		HAL_IncTick();
 	
-		if (read_once == 0) {
+		if (read_every_5 == 5) {
 			SYSTICK_READ_TEMP_FLAG = 1;
-			read_once = 1;
+			read_every_5 = 1;
 		} else {
-			read_once = 0;
+			read_every_5++;
 		}
 		
 		SYSTICK_DISPLAY_SEGMENT_FLAG = 1;
