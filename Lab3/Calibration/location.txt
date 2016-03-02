@@ -1,0 +1,1 @@
+The calibration values were taken on the MicroP lab, computer on the far up-left corner, on the blue surface.
