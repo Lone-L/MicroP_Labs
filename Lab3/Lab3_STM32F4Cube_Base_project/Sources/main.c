@@ -13,6 +13,7 @@
 #include "supporting_functions.h"
 
 #include "accelerometer.h"
+#include "kalmanfilter.h"
 
 /* Global variables ----------------------------------------------------------*/
 
@@ -24,6 +25,8 @@ void SystemClock_Config	(void);
 int main(void)
 {	
 	float ax, ay, az;
+	float tilt, filtered_tilt;
+	KalmanState kstate = {0.001, 0.0032, 0.0, 0.0, 0.0};	/* Filter parameters obtained by experiment and variance calculations */
 	
   /* MCU Configuration----------------------------------------------------------*/
   HAL_Init();
@@ -37,7 +40,12 @@ int main(void)
 	while (1) {
 		if (Accelerometer_HasNewData()) {
 			Accelerometer_ReadAccel(&ax, &ay, &az);
-			printf("%f, %f, %f\n", ax, ay, az);
+			Accelerometer_Calibrate(&ax, &ay, &az);
+			
+			tilt = Accelerometer_GetTiltAngle(ax, ay, az);
+			Kalmanfilter_asm(&tilt, &filtered_tilt, 1, &kstate);
+			printf("%f, %f\n", tilt, filtered_tilt);
+			
 			Accelerometer_ClearNewData();
 		}
 	}
