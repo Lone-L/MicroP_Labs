@@ -45,3 +45,6 @@
 .\objects\main.o: .\Headers\supporting_functions.h
 .\objects\main.o: .\Headers\accelerometer.h
 .\objects\main.o: .\Headers\kalmanfilter.h
+.\objects\main.o: .\Headers\seven_segment.h
+.\objects\main.o: .\Headers\visuals.h
+.\objects\main.o: .\Headers\hardware_timer.h

@@ -505,6 +505,21 @@
               <FileType>2</FileType>
               <FilePath>.\Sources\Kalmanfilter_asm.s</FilePath>
             </File>
+            <File>
+              <FileName>seven_segment.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\seven_segment.c</FilePath>
+            </File>
+            <File>
+              <FileName>hardware_timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\hardware_timer.c</FilePath>
+            </File>
+            <File>
+              <FileName>visuals.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\visuals.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

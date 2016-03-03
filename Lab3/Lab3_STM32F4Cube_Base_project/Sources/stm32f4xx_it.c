@@ -49,6 +49,10 @@
   * @{
   */
 
+/* Global variables ----------------------------------------------------------*/
+extern TIM_HandleTypeDef timmy3;	/* TIM3 configuration struct */
+extern TIM_HandleTypeDef timmy4;	/* TIM4 configuration struct */
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -182,6 +186,26 @@ void EXTI0_IRQHandler(void)
 {
 	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);	/* Interrupt caused by GPIO pin 0 (in our case because of PE0 pin: INT1 of LIS3DSH accelerometer) */
 	/* This function also clears the interrupt flag */
+}
+
+/**
+  * @brief  This function handles TIM3 interrupt request.
+  * @param  None
+  * @retval None
+  */
+void TIM3_IRQHandler(void)
+{
+	HAL_TIM_IRQHandler(&timmy3);
+}
+
+/**
+  * @brief  This function handles TIM4 interrupt request.
+  * @param  None
+  * @retval None
+  */
+void TIM4_IRQHandler(void)
+{
+	HAL_TIM_IRQHandler(&timmy4);
 }
 
 /**

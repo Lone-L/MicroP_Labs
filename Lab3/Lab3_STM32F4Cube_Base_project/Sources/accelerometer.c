@@ -18,10 +18,10 @@ void Accelerometer_Init(void)
 	LIS3DSH_InitTypeDef accel_init;
 	LIS3DSH_DRYInterruptConfigTypeDef it_config;
 	
-	accel_init.Power_Mode_Output_DataRate = LIS3DSH_DATARATE_25;					/* Output data 25 times per second as by requirements */
+	accel_init.Power_Mode_Output_DataRate = LIS3DSH_DATARATE_25;					/* Output data 25 times per second (25 Hz) as by requirements */
 	accel_init.Axes_Enable = LIS3DSH_XYZ_ENABLE;													/* Enable x, y and z axes */
-	accel_init.Continous_Update = LIS3DSH_ContinousUpdate_Enabled;				/* Enable continuous update */
-	accel_init.AA_Filter_BW = LIS3DSH_AA_BW_800;													/* Anti-aliasing filter bandwidth (default value is 800Hz) */
+	accel_init.Continous_Update = LIS3DSH_ContinousUpdate_Disabled;				/* Disable continuous update to be able to read the MSB of each reading */
+	accel_init.AA_Filter_BW = LIS3DSH_AA_BW_50;														/* Anti-aliasing filter bandwidth set to 50Hz to remove frequencies above 2 * 25Hz */
 	accel_init.Full_Scale = LIS3DSH_FULLSCALE_2;													/* Use full scale of +/- 2g */
 	accel_init.Self_Test = LIS3DSH_SELFTEST_NORMAL;												/* Self test normal */
 	
@@ -122,7 +122,7 @@ float Accelerometer_GetTiltAngle(float ax, float ay, float az)
 /**
   * @brief  Indicates whether accelerometer got new data (used for polling).
 	* @param  None
-  * @retval None
+	* @retval int: 1 if new data, 0 otherwise
   */
 int Accelerometer_HasNewData(void)
 {

@@ -21,16 +21,27 @@ Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V2.0.15.0_KEIL
 Dialog DLL:      TCM.DLL V1.14.5.0
  
 <h2>Project:</h2>
-\\campus.mcgill.ca\EMF\ELE\gsavad\My Documents\Microprocessor Systems\MicroP_Labs\Lab3\Lab3_STM32F4Cube_Base_project\Base_Project.uvprojx
-Project File Date:  03/01/2016
+H:\My Documents\Microprocessor Systems\MicroP_Labs\Lab3\Lab3_STM32F4Cube_Base_project\Base_Project.uvprojx
+Project File Date:  03/02/2016
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.05 update 2 (build 169)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'Lab 3'
 compiling main.c...
+Sources\main.c(62): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+                        if (desired_tilt > filtered_tilt + 5.0) {
+Sources\main.c(66): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+                        } else if (desired_tilt < filtered_tilt - 5.0) {
+Sources\main.c: 2 warnings, 0 errors
+compiling seven_segment.c...
+Sources\seven_segment.c(64): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+                if (abs_angle < 10.0) {
+Sources\seven_segment.c(73): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+                } else if (fabsf(displayed_angle) < 100.0) {
+Sources\seven_segment.c: 2 warnings, 0 errors
 linking...
-Program Size: Code=10756 RO-data=508 RW-data=24 ZI-data=1112  
-".\Objects\Base_Project.axf" - 0 Error(s), 0 Warning(s).
+Program Size: Code=13012 RO-data=508 RW-data=104 ZI-data=1232  
+".\Objects\Base_Project.axf" - 0 Error(s), 4 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -66,8 +77,8 @@ Package Vendor: Keil
    * Component: USART Version: 1.4.2
 
 <h2>Collection of Component include folders:</h2>
-  \\campus.mcgill.ca\EMF\ELE\gsavad\My Documents\Microprocessor Systems\MicroP_Labs\Lab3\Lab3_STM32F4Cube_Base_project\RTE
-  \\campus.mcgill.ca\EMF\ELE\gsavad\My Documents\Microprocessor Systems\MicroP_Labs\Lab3\Lab3_STM32F4Cube_Base_project\RTE\Device\STM32F407VGTx
+  H:\My Documents\Microprocessor Systems\MicroP_Labs\Lab3\Lab3_STM32F4Cube_Base_project\RTE
+  H:\My Documents\Microprocessor Systems\MicroP_Labs\Lab3\Lab3_STM32F4Cube_Base_project\RTE\Device\STM32F407VGTx
   C:\Keil_v5\ARM\PACK\ARM\CMSIS\4.5.0\CMSIS\Include
   C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include
   C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\STM32F4xx_HAL_Driver\Inc

@@ -14,6 +14,9 @@
 
 #include "accelerometer.h"
 #include "kalmanfilter.h"
+#include "seven_segment.h"
+#include "visuals.h"
+#include "hardware_timer.h"
 
 /* Global variables ----------------------------------------------------------*/
 
@@ -26,7 +29,9 @@ int main(void)
 {	
 	float ax, ay, az;
 	float tilt, filtered_tilt;
+	float desired_tilt = 60.0;
 	KalmanState kstate = {0.001, 0.0032, 0.0, 0.0, 0.0};	/* Filter parameters obtained by experiment and variance calculations */
+	int counter = 0;	/* Keep track of how many accelerometer readings were made */
 	
   /* MCU Configuration----------------------------------------------------------*/
   HAL_Init();
@@ -36,17 +41,51 @@ int main(void)
 	
   /* Initialize all configured peripherals */
 	Accelerometer_Init();
+	SevenSegment_Init();
+	Visuals_Init();
+	HardwareTimer3_Init();
+	HardwareTimer4_Init();
+	
+	SevenSegment_TurnOff();
+	Visuals_TurnOn();
 	
 	while (1) {
 		if (Accelerometer_HasNewData()) {
+			Accelerometer_ClearNewData();
 			Accelerometer_ReadAccel(&ax, &ay, &az);
 			Accelerometer_Calibrate(&ax, &ay, &az);
 			
 			tilt = Accelerometer_GetTiltAngle(ax, ay, az);
 			Kalmanfilter_asm(&tilt, &filtered_tilt, 1, &kstate);
-			printf("%f, %f\n", tilt, filtered_tilt);
+			printf("%f\n", filtered_tilt);
 			
-			Accelerometer_ClearNewData();
+			if (desired_tilt > filtered_tilt + 5.0) {
+				SevenSegment_TurnOff();
+				Visuals_TurnOn();
+				Visuals_SetDirection(COUNTERCLOCKWISE);
+			} else if (desired_tilt < filtered_tilt - 5.0) {
+				SevenSegment_TurnOff();
+				Visuals_TurnOn();
+				Visuals_SetDirection(CLOCKWISE);
+			} else {
+				Visuals_TurnOff();
+				SevenSegment_TurnOn();
+			}
+			
+			if (counter % SEVEN_SEGMENT_DISPLAY_COUNT == 0)
+				SevenSegment_SetDisplayValue(filtered_tilt);
+			
+			++counter;
+		}
+		
+		if (HardwareTimer3_Elapsed()) {
+			HardwareTimer3_ClearElapsed();
+			SevenSegment_ToggleDisplayedDigit();
+		}
+		
+		if (HardwareTimer4_Elapsed()) {
+			HardwareTimer4_ClearElapsed();
+			Visuals_ToggleLEDs();
 		}
 	}
 }
