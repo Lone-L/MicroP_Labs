@@ -2,8 +2,8 @@
 #include "math.h"
 
 /* Private macros ------------------------------------------------------------*/
-#define PI (3.141592653589793)
-#define RAD_TO_DEG(x) ((x) * 180.0 / PI)
+#define PI ((float)(3.141592653589793))
+#define RAD_TO_DEG(x) ((x) * ((float)180.0) / PI)
 
 /* Private variables ---------------------------------------------------------*/
 static int ACCELEROMETER_NEW_DATA = 0;	/* Flag which indicates if accelerometer has new data available. Set by interrupt. */
@@ -114,7 +114,10 @@ float Accelerometer_GetTiltAngle(float ax, float ay, float az)
 	/* When az < 0, the board is past the point where the y-axis points downwards --> angle goes past 90 degrees.
 		 But atan2 returns angles between -90 and 90, so we need to get the 180 - value. */
 	if (az < 0)
-		angle = 180.0 - angle;
+		angle = ((float)180.0) - angle;
+	
+	if (angle < 0)
+		angle += (float)360.0;	/* Return angles in the range 0 to 360 instead of -90 to 270 */
 	
 	return angle;
 }

@@ -1,4 +1,4 @@
-.\objects\visuals.o: visuals.c
+.\objects\visuals.o: Sources\visuals.c
 .\objects\visuals.o: C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h
 .\objects\visuals.o: .\Headers\stm32f4xx_hal_conf.h
 .\objects\visuals.o: .\Headers\RTE_Components.h

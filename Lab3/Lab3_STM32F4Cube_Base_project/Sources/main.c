@@ -59,11 +59,11 @@ int main(void)
 			Kalmanfilter_asm(&tilt, &filtered_tilt, 1, &kstate);
 			printf("%f\n", filtered_tilt);
 			
-			if (desired_tilt > filtered_tilt + 5.0) {
+			if (desired_tilt > filtered_tilt + (float)(5.0)) {
 				SevenSegment_TurnOff();
 				Visuals_TurnOn();
 				Visuals_SetDirection(COUNTERCLOCKWISE);
-			} else if (desired_tilt < filtered_tilt - 5.0) {
+			} else if (desired_tilt < filtered_tilt - (float)(5.0)) {
 				SevenSegment_TurnOff();
 				Visuals_TurnOn();
 				Visuals_SetDirection(CLOCKWISE);

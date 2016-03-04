@@ -61,7 +61,7 @@ void SevenSegment_ToggleDisplayedDigit(void)
 		/* We only care about absolute values. Angles should be between 0 and 180 so it's fine. */
 		abs_angle = fabsf(displayed_angle);
 		
-		if (abs_angle < 10.0) {
+		if (abs_angle < (float)(10.0)) {
 			/* Format is X.YY° decimal point on display 0 */
 			switch (display) {
 				case 0: digit = (int)(abs_angle); have_decimal_point = 1; break;
@@ -70,7 +70,7 @@ void SevenSegment_ToggleDisplayedDigit(void)
 				case 3: digit = 10;	break;	/* DEGREE sign */
 				default: display = 0;	/* Should not happen */
 			}
-		} else if (fabsf(displayed_angle) < 100.0) {
+		} else if (fabsf(displayed_angle) < (float)(100.0)) {
 			/* Format is XX.Y° decimal point on display 1 */
 			switch (display) {
 				case 0: digit = (int)(abs_angle) / 10; break;
