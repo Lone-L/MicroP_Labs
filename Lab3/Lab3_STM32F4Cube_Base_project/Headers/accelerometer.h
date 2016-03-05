@@ -4,7 +4,7 @@
 void Accelerometer_Init(void);
 void Accelerometer_ReadAccel(float *ax, float *ay, float *az);
 void Accelerometer_Calibrate(float *ax, float *ay, float *az);
-
+void ACCELEROMETER_Callback(void);
 float Accelerometer_GetTiltAngle(float ax, float ay, float az);
 
 int Accelerometer_HasNewData(void);

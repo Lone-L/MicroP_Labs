@@ -143,11 +143,11 @@ void Accelerometer_ClearNewData(void)
 }
 
 /**
-  * @brief  EXTI line detection callbacks.
-  * @param  GPIO_Pin: Specifies the pins connected EXTI line
+  * @brief  Accelerometer new data callback
+  * @param  None
   * @retval None
   */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+void ACCELEROMETER_Callback(void)
 {
 	ACCELEROMETER_NEW_DATA = 1;	/* Set flag to indicate new data is available on sensor */
 	/* The DRY interrupt flag on the sensor is cleared when the data is read */

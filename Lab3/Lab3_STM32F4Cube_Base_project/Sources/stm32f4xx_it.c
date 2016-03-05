@@ -189,6 +189,17 @@ void EXTI0_IRQHandler(void)
 }
 
 /**
+  * @brief  This function handles EXTI Line 9-5 interrupt request.
+  * @param  None
+  * @retval None
+  */
+void EXTI9_5_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8);	/* Interrupt caused by GPIO pin 8 */
+	/* This function also clears the interrupt flag */
+}
+
+/**
   * @brief  This function handles TIM3 interrupt request.
   * @param  None
   * @retval None
