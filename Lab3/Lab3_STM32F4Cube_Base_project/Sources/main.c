@@ -17,67 +17,46 @@
 #include "seven_segment.h"
 #include "visuals.h"
 #include "hardware_timer.h"
+#include "keypad.h"
 
 /* Global variables ----------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
+typedef enum _StateEnum {
+	WAIT_MODE = 0,
+	INPUT_MODE,
+	ANGLE_MODE
+} StateEnum;
+
+static StateEnum state = WAIT_MODE;
+static int desired_tilt = 0;
 
 /* Private function prototypes -----------------------------------------------*/
+void handle_input_mode(void);
+void handle_angle_mode(void);
 void SystemClock_Config	(void);
 
 int main(void)
 {	
-	float ax, ay, az;
-	float tilt, filtered_tilt;
-	float desired_tilt = 60.0;
-	KalmanState kstate = {0.001, 0.0032, 0.0, 0.0, 0.0};	/* Filter parameters obtained by experiment and variance calculations */
-	int counter = 0;	/* Keep track of how many accelerometer readings were made */
-	
   /* MCU Configuration----------------------------------------------------------*/
   HAL_Init();
-
+	
   /* Configure the system clock */
   SystemClock_Config();
-	
+
   /* Initialize all configured peripherals */
 	Accelerometer_Init();
 	SevenSegment_Init();
 	Visuals_Init();
 	HardwareTimer3_Init();
 	HardwareTimer4_Init();
-	
+	Keypad_Init();
+
 	SevenSegment_TurnOff();
-	Visuals_TurnOn();
+	Visuals_TurnOff();
+	printf("peripherals initialized\n");
 	
 	while (1) {
-		if (Accelerometer_HasNewData()) {
-			Accelerometer_ClearNewData();
-			Accelerometer_ReadAccel(&ax, &ay, &az);
-			Accelerometer_Calibrate(&ax, &ay, &az);
-			
-			tilt = Accelerometer_GetTiltAngle(ax, ay, az);
-			Kalmanfilter_asm(&tilt, &filtered_tilt, 1, &kstate);
-			printf("%f\n", filtered_tilt);
-			
-			if (desired_tilt > filtered_tilt + (float)(5.0)) {
-				SevenSegment_TurnOff();
-				Visuals_TurnOn();
-				Visuals_SetDirection(COUNTERCLOCKWISE);
-			} else if (desired_tilt < filtered_tilt - (float)(5.0)) {
-				SevenSegment_TurnOff();
-				Visuals_TurnOn();
-				Visuals_SetDirection(CLOCKWISE);
-			} else {
-				Visuals_TurnOff();
-				SevenSegment_TurnOn();
-			}
-			
-			if (counter % SEVEN_SEGMENT_DISPLAY_COUNT == 0)
-				SevenSegment_SetDisplayValue(filtered_tilt);
-			
-			++counter;
-		}
-		
 		if (HardwareTimer3_Elapsed()) {
 			HardwareTimer3_ClearElapsed();
 			SevenSegment_ToggleDisplayedDigit();
@@ -87,6 +66,106 @@ int main(void)
 			HardwareTimer4_ClearElapsed();
 			Visuals_ToggleLEDs();
 		}
+		
+		switch (state) {
+			case WAIT_MODE:
+				if (Keypad_Pressed()) {
+					Keypad_ClearPressed();
+					state = INPUT_MODE;
+					desired_tilt = 0;
+					SevenSegment_TurnOff();
+					SevenSegment_TurnOn();
+					Visuals_TurnOff();
+				}
+				
+				break;
+				
+			case INPUT_MODE:
+				if (Keypad_Pressed()) {
+					Keypad_ClearPressed();
+					handle_input_mode();
+				}
+				
+				break;
+			
+			case ANGLE_MODE:
+				if (Keypad_Pressed()) {
+					Keypad_ClearPressed();
+					SevenSegment_TurnOff();
+					Visuals_TurnOff();
+					state = WAIT_MODE;
+					continue;
+				}
+					
+				handle_angle_mode();
+				break;
+			
+			default:
+				state = WAIT_MODE;
+				break;
+		}
+	}
+}
+
+void handle_input_mode(void)
+{
+	int key_pressed = -1;
+	
+	key_pressed = Keypad_ScanKey();
+	
+	printf("%d\n", key_pressed);
+	
+	if (key_pressed == ENTER_KEY) {
+		state = ANGLE_MODE;
+		return;
+	}
+	
+	/* Ignore invalid keys */
+	if (key_pressed == -1)
+		return;
+	
+	desired_tilt = desired_tilt * 10 + key_pressed;
+	
+	if (desired_tilt > 180)
+		desired_tilt = 0;
+	
+	SevenSegment_SetDisplayValue((float)desired_tilt);
+}
+
+void handle_angle_mode(void)
+{
+	/* These are preserved between function calls (static) */
+	static KalmanState kstate = {0.001, 0.0032, 0.0, 0.0, 0.0};	/* Filter parameters obtained by experiment and variance calculations */
+	static int counter = 0;	/* Keep track of how many accelerometer readings were made */
+	
+	float ax, ay, az;
+	float tilt, filtered_tilt;
+	
+	if (Accelerometer_HasNewData()) {
+		Accelerometer_ClearNewData();
+		Accelerometer_ReadAccel(&ax, &ay, &az);
+		Accelerometer_Calibrate(&ax, &ay, &az);
+			
+		tilt = Accelerometer_GetTiltAngle(ax, ay, az);
+		Kalmanfilter_asm(&tilt, &filtered_tilt, 1, &kstate);
+			
+		if (desired_tilt > filtered_tilt + (float)(5.0)) {
+			SevenSegment_TurnOff();
+			Visuals_TurnOn();
+			Visuals_SetDirection(COUNTERCLOCKWISE);
+		} else if (desired_tilt < filtered_tilt - (float)(5.0)) {
+			SevenSegment_TurnOff();
+			Visuals_TurnOn();
+			Visuals_SetDirection(CLOCKWISE);
+		} else {
+			Visuals_TurnOff();
+			SevenSegment_TurnOn();
+		}
+		
+		if (counter % SEVEN_SEGMENT_DISPLAY_COUNT == 0)
+			SevenSegment_SetDisplayValue(filtered_tilt);
+		
+		++counter;
 	}
 }
 

@@ -518,7 +518,17 @@
             <File>
               <FileName>visuals.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\visuals.c</FilePath>
+              <FilePath>.\Sources\visuals.c</FilePath>
+            </File>
+            <File>
+              <FileName>keypad.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\keypad.c</FilePath>
+            </File>
+            <File>
+              <FileName>EXTI_handler_cb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\EXTI_handler_cb.c</FilePath>
             </File>
           </Files>
         </Group>

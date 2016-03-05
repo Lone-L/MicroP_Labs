@@ -48,3 +48,4 @@
 .\objects\main.o: .\Headers\seven_segment.h
 .\objects\main.o: .\Headers\visuals.h
 .\objects\main.o: .\Headers\hardware_timer.h
+.\objects\main.o: .\Headers\keypad.h

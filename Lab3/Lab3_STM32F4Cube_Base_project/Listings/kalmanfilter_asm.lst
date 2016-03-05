@@ -88,14 +88,16 @@ ARM Macro Assembler    Page 2
    62 0000007C 4770            BX               LR          ; return 1
    63 0000007E                 END
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
-erwork --depend=.\objects\kalmanfilter_asm.d -o.\objects\kalmanfilter_asm.o -IH
-:\MicroP_Labs\Lab3\Lab3_STM32F4Cube_Base_project\RTE -IH:\MicroP_Labs\Lab3\Lab3
-_STM32F4Cube_Base_project\RTE\Device\STM32F407VGTx -IC:\Keil_v5\ARM\PACK\ARM\CM
-SIS\4.5.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\
-CMSIS\Device\ST\STM32F4xx\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.
-0\Drivers\STM32F4xx_HAL_Driver\Inc --predefine="__MICROLIB SETA 1" --predefine=
-"__UVISION_VERSION SETA 515" --predefine="_RTE_ SETA 1" --predefine="STM32F407x
-x SETA 1" --list=.\listings\kalmanfilter_asm.lst Sources\Kalmanfilter_asm.s
+erwork --depend=.\objects\kalmanfilter_asm.d -o.\objects\kalmanfilter_asm.o -I"
+\campus.mcgill.ca\EMF\ELE\gsavad\My Documents\Microprocessor Systems\MicroP_Lab
+s\Lab3\Lab3_STM32F4Cube_Base_project\RTE" -I"\campus.mcgill.ca\EMF\ELE\gsavad\M
+y Documents\Microprocessor Systems\MicroP_Labs\Lab3\Lab3_STM32F4Cube_Base_proje
+ct\RTE\Device\STM32F407VGTx" -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\4.5.0\CMSIS\Includ
+e -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\CMSIS\Device\ST\STM32F
+4xx\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\STM32F4xx_HA
+L_Driver\Inc --predefine="__MICROLIB SETA 1" --predefine="__UVISION_VERSION SET
+A 515" --predefine="_RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --list=.\lis
+tings\kalmanfilter_asm.lst Sources\Kalmanfilter_asm.s
 
 
 

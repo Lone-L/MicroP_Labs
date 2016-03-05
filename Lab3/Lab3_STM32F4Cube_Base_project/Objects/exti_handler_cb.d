@@ -44,3 +44,4 @@
 .\objects\exti_handler_cb.o: C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_usart.h
 .\objects\exti_handler_cb.o: .\Headers\accelerometer.h
 .\objects\exti_handler_cb.o: .\Headers\EXTI_handler_cb.h
+.\objects\exti_handler_cb.o: .\Headers\keypad.h
