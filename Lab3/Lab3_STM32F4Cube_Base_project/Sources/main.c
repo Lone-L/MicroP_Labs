@@ -56,31 +56,39 @@ int main(void)
 	Visuals_TurnOff();
 	printf("peripherals initialized\n");
 	
+	/* Polling loop */
 	while (1) {
+		/* Check if it's time to toggle 7-segment digits */
 		if (HardwareTimer3_Elapsed()) {
 			HardwareTimer3_ClearElapsed();
 			SevenSegment_ToggleDisplayedDigit();
 		}
 		
+		/* Check if it's time to toggle visual LEDs */
 		if (HardwareTimer4_Elapsed()) {
 			HardwareTimer4_ClearElapsed();
 			Visuals_ToggleLEDs();
 		}
 		
+		/* Behavior depends on current state. */
 		switch (state) {
 			case WAIT_MODE:
+				/* We are waiting for keypad press to read into desired tilt.
+					 The screen is cleared and visuals turned off. */
 				if (Keypad_Pressed()) {
 					Keypad_ClearPressed();
 					state = INPUT_MODE;
-					desired_tilt = 0;
+					desired_tilt = 0;	/* Start at 0. */
 					SevenSegment_TurnOff();
-					SevenSegment_TurnOn();
+					SevenSegment_TurnOn();	/* Used to display current entered value */
 					Visuals_TurnOff();
 				}
 				
 				break;
 				
 			case INPUT_MODE:
+				/* Input mode: read key presses and store into desired tilt.
+					 Also displays current entered value on 7-segment display. */
 				if (Keypad_Pressed()) {
 					Keypad_ClearPressed();
 					handle_input_mode();
@@ -89,11 +97,15 @@ int main(void)
 				break;
 			
 			case ANGLE_MODE:
+				/* Desired tilt has been chosen. Now go processing angles from accelerometer and display visuals.
+					 If keypad is pressed again, go back to input mode to read new desired tilt value. */
 				if (Keypad_Pressed()) {
 					Keypad_ClearPressed();
+					desired_tilt = 0;
 					SevenSegment_TurnOff();
+					SevenSegment_TurnOn();
 					Visuals_TurnOff();
-					state = WAIT_MODE;
+					state = INPUT_MODE;
 					continue;
 				}
 					
@@ -101,6 +113,7 @@ int main(void)
 				break;
 			
 			default:
+				/* Shouldn't happen. */
 				state = WAIT_MODE;
 				break;
 		}
@@ -120,6 +133,7 @@ void handle_input_mode(void)
 	
 	printf("%d\n", key_pressed);
 	
+	/* We're done reading the new value. Go to angle mode. */
 	if (key_pressed == ENTER_KEY) {
 		state = ANGLE_MODE;
 		return;
@@ -129,11 +143,14 @@ void handle_input_mode(void)
 	if (key_pressed == -1)
 		return;
 	
+	/* Update desired tilt from next digit. */
 	desired_tilt = desired_tilt * 10 + key_pressed;
 	
+	/* Go back to 0 if tilt value greater than 180. */
 	if (desired_tilt > 180)
 		desired_tilt = 0;
 	
+	/* Display current entered value on 7-segment. */
 	SevenSegment_SetDisplayValue((float)desired_tilt);
 }
 
@@ -151,14 +168,16 @@ void handle_angle_mode(void)
 	float ax, ay, az;
 	float tilt, filtered_tilt;
 	
+	/* Check if there is new data available on accelerometer, and process it. */
 	if (Accelerometer_HasNewData()) {
 		Accelerometer_ClearNewData();
 		Accelerometer_ReadAccel(&ax, &ay, &az);
 		Accelerometer_Calibrate(&ax, &ay, &az);
 			
 		tilt = Accelerometer_GetTiltAngle(ax, ay, az);
-		Kalmanfilter_asm(&tilt, &filtered_tilt, 1, &kstate);
-			
+		Kalmanfilter_asm(&tilt, &filtered_tilt, 1, &kstate);	/* filter the tilt angle */
+		
+		/* Determine how measured angle relates to desired tilt, and control visuals/7-segment accordingly. */
 		if (desired_tilt > filtered_tilt + (float)(5.0)) {
 			SevenSegment_TurnOff();
 			Visuals_TurnOn();
@@ -168,10 +187,13 @@ void handle_angle_mode(void)
 			Visuals_TurnOn();
 			Visuals_SetDirection(CLOCKWISE);
 		} else {
+			/* We are within 5 degrees of the desired tilt. Display angle on 7-segment. */
 			Visuals_TurnOff();
 			SevenSegment_TurnOn();
 		}
 		
+		/* Give enough time to display a value on 7-segment.
+			 Display only one out of SEVEN_SEGMENT_DISPLAY_COUNT values on the 7-segment. */
 		if (counter % SEVEN_SEGMENT_DISPLAY_COUNT == 0)
 			SevenSegment_SetDisplayValue(filtered_tilt);
 		
