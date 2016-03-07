@@ -45,6 +45,7 @@ static int interpret_key(int row, int col)
 		case ('#'):
 			return ENTER_KEY; // 
 		default:
+			/* Indicates invalid key. */
 			return -1; 
 	}
 }
@@ -80,6 +81,9 @@ int Keypad_ScanKey(void)
 			col = 3;
 			col_pin_num = COL4_PIN_NUMBER;
 			break;
+		default:
+			/* Shouldn't happen */
+			return -1;
 	}
 	
 	/*Turn all row pins to LOW */
@@ -112,6 +116,11 @@ int Keypad_ScanKey(void)
 	return interpret_key(row, col);
 }
 
+/**
+   * @brief  Initialize the keypad and associated GPIO pins.
+   * @param  None
+   * @retval None
+   */
 void Keypad_Init(void)
 {
 	
@@ -186,34 +195,53 @@ void Keypad_Init(void)
 	KEYPAD_KEY_PRESSED = 0;
 }
 
+/**
+   * @brief  Indicate if keypad key was pressed.
+   * @param  None
+	 * @retval int: whether keypad key was pressed.
+   */
 int Keypad_Pressed(void)
 {
 	return KEYPAD_KEY_PRESSED;
 }
 
+/**
+   * @brief  Clear the keypad key pressed flag.
+   * @param  None
+   * @retval None
+   */
 void Keypad_ClearPressed(void)
 {
 	KEYPAD_KEY_PRESSED = 0;
 }
 
+/**
+   * @brief  Callback when IRQhandler caused by key press occured. Handles debouncing.
+   * @param  None
+   * @retval None
+   */
 void Keypad_KeyPressedCallback(void)
 {
-	static int counter = 0;
+	static int counter = 0;	/* Used for counting consecutive events related to same key press for debouncing */
 	
+	/* Check if any of the column pins are set to 1 */
 	if ((col_pins[0]->IDR & COL1_PIN_NUMBER) | (col_pins[1]->IDR & COL2_PIN_NUMBER) | (col_pins[2]->IDR & COL3_PIN_NUMBER) | (col_pins[3]->IDR & COL4_PIN_NUMBER))
 	{
 		switch (KEYPAD_STATE) {
 			case UNPRESSED:
+				/* First time button press detected. Read the scanned value into temp_key to compare later. */
 				temp_key = Keypad_ScanKey();
 				counter = 0;
 				KEYPAD_STATE = POTENTIALLY_PRESSED;
 				break;
 			
 			case POTENTIALLY_PRESSED:
+				/* To check if this is a real key press and not just noise, count the number of times the same value is read consecutively.
+					 After the counter reaches above the debounce count, assume it is definitely a key press. */
 				if (counter > KEYPAD_DEBOUNCE_COUNT) {
 					KEYPAD_STATE = DEFINITELY_PRESSED;
 				} else if (Keypad_ScanKey() != temp_key) {
-					KEYPAD_STATE = UNPRESSED;
+					KEYPAD_STATE = UNPRESSED;	/* Normal user press should not change the key value that fast, so assume it's noise. */
 				} else {
 					++counter;
 				}
@@ -221,11 +249,13 @@ void Keypad_KeyPressedCallback(void)
 				break;
 				
 			case DEFINITELY_PRESSED:
+				/* We now believe the key is indeed pressed, and will proceed to scan it for real in main. */
 				KEYPAD_KEY_PRESSED = 1;
 				KEYPAD_STATE = UNPRESSED;
 				break;
 			
 			default:
+				/* Should not happen. */
 				KEYPAD_STATE = UNPRESSED;
 				break;
 		}

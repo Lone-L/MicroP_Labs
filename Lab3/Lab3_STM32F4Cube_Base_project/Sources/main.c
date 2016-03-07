@@ -107,6 +107,11 @@ int main(void)
 	}
 }
 
+/**
+   * @brief  Handles input mode (reads input from keypad).
+   * @param  None
+   * @retval None
+   */
 void handle_input_mode(void)
 {
 	int key_pressed = -1;
@@ -132,6 +137,11 @@ void handle_input_mode(void)
 	SevenSegment_SetDisplayValue((float)desired_tilt);
 }
 
+/**
+   * @brief  Handles angle mode (processes tilt angle and visuals).
+   * @param  None
+   * @retval None
+   */
 void handle_angle_mode(void)
 {
 	/* These are preserved between function calls (static) */

@@ -16,7 +16,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		case GPIO_PIN_4:
 			//call keypad CB
 		  Keypad_KeyPressedCallback();
-			break;						
+			break;
+		default:
+			/* Shouldn't happen */
+			break;
 	}
 }
 
