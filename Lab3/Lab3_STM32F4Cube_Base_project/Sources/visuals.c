@@ -45,6 +45,8 @@ void Visuals_ToggleLEDs(void)
 		} else {							/* Clockwise */
 			led = (led + 1) % 4;
 		}
+	} else {
+		GPIOD->ODR &= 0x0FFF;	/* Turn off all LEDs. */
 	}
 }
 

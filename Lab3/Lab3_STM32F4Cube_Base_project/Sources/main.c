@@ -77,11 +77,11 @@ int main(void)
 					 The screen is cleared and visuals turned off. */
 				if (Keypad_Pressed()) {
 					Keypad_ClearPressed();
-					state = INPUT_MODE;
 					desired_tilt = 0;	/* Start at 0. */
 					SevenSegment_TurnOff();
 					SevenSegment_TurnOn();	/* Used to display current entered value */
 					Visuals_TurnOff();
+					state = INPUT_MODE;
 				}
 				
 				break;

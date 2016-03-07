@@ -55,8 +55,11 @@ void SevenSegment_ToggleDisplayedDigit(void)
 		int have_decimal_point = 0;
 		float abs_angle = 0.0;
 		
-		if (!activated)
+		/* If not activated, just turn off the display. */
+		if (!activated) {
+			GPIOE->ODR &= 0x000F;	/* Clear all bits to turn off the display */
 			return;
+		}
 		
 		/* We only care about absolute values. Angles should be between 0 and 180 so it's fine. */
 		abs_angle = fabsf(displayed_angle);

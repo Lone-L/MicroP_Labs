@@ -2,6 +2,7 @@
 #include "stm32f4xx.h"
 #include "keypad.h"
 
+/* Keypad states used for debouncing */
 typedef enum _KeypadState {
 	UNPRESSED = 0,
 	POTENTIALLY_PRESSED,
@@ -9,7 +10,7 @@ typedef enum _KeypadState {
 } KeypadState;
 
 static KeypadState KEYPAD_STATE = UNPRESSED;
-static int temp_key;
+static int temp_key;	/* Key detected during debouncing (see Keypad_KeyPressedCallback) */
 
 static int KEYPAD_KEY_PRESSED = 0;
 static const char values[NUM_ROWS][NUM_COLS] = {{'1', '2', '3', 'A'}, 
@@ -41,9 +42,9 @@ static int interpret_key(int row, int col)
 		case ('7'):
 		case ('8'):
 		case ('9'):
-			return values[row][col] - '0';
+			return values[row][col] - '0';	/* will return int 0 to 9 for keys '0' to '9'. */
 		case ('#'):
-			return ENTER_KEY; // 
+			return ENTER_KEY; /* Just pick a value different than 0 to 9 */ 
 		default:
 			/* Indicates invalid key. */
 			return -1; 
@@ -57,12 +58,13 @@ static int interpret_key(int row, int col)
    */
 int Keypad_ScanKey(void)
 {
+	/* Read the column bits into input_col (reorder in a more natural order as defined in keypad.h) */
 	int input_col = (((col_pins[0]->IDR & COL1_PIN_NUMBER) >> 1) | ((col_pins[1]->IDR & COL2_PIN_NUMBER) >> 1) | ((col_pins[2]->IDR & COL3_PIN_NUMBER) >> 2) | ((col_pins[3]->IDR & COL4_PIN_NUMBER) >> 0)) & 0x000F;
-	int row = 0, col = 0;
-	int col_pin_num = 0;
+	int row = 0, col = 0;	/* Keypad row and column pressed */
+	int col_pin_num = 0;	/* ODR/IDR bit corresponding to column. */
 	int i;
 	
-	/*Select Column*/
+	/* Determine which column was pressed */
 	switch(input_col)
 	{
 		case (COL_ONE):
@@ -133,7 +135,10 @@ void Keypad_Init(void)
 	  __HAL_RCC_GPIOD_CLK_ENABLE();
 
 		
-	  /*Column pins set as input*/
+		/* Column pins set as input: PA1, PB2, PC4, PD3 correspond to columns 1, 2, 3, 4 respectively.
+			 Order is weird because apparently PC3 or PD4 was used for other functions.
+			 Column pins set to pulldown resistors --> default to 0, measure 1 when key pressed.
+			 Key pressed causes transition from 0 to 1 ---> need rising-edge interrupts */
 		KP_PINSA_INPUT.Pin      = GPIO_PIN_1;
 		KP_PINSA_INPUT.Mode  		= GPIO_MODE_IT_RISING;     
 		KP_PINSA_INPUT.Pull  		= GPIO_PULLDOWN;            
@@ -160,7 +165,7 @@ void Keypad_Init(void)
 		HAL_GPIO_Init(GPIOC, &KP_PINSC_INPUT);
 	  HAL_GPIO_Init(GPIOD, &KP_PINSD_INPUT);
 	
-	  /*Row pins set as output*/
+		/* Row pins set as output: PA8, PB8, PC8, PD8. */
 		KP_PINS_OUTPUT.Pin   = GPIO_PIN_8;
 		KP_PINS_OUTPUT.Mode  = GPIO_MODE_OUTPUT_PP;     
 		KP_PINS_OUTPUT.Pull  = GPIO_NOPULL;            
@@ -171,15 +176,15 @@ void Keypad_Init(void)
 		HAL_GPIO_Init(GPIOC, &KP_PINS_OUTPUT);
 		HAL_GPIO_Init(GPIOD, &KP_PINS_OUTPUT);
 	
-	
 
-	/*Turn all row pins to HIGH */
+	/*Turn all row pins to HIGH. Should be 1 by default to detect key press on pulled-down columns. */
 	row_pins[0]->ODR = row_pins[0]->ODR | ROW_PIN_NUMBER;
 	row_pins[1]->ODR = row_pins[1]->ODR | ROW_PIN_NUMBER;
 	row_pins[2]->ODR = row_pins[2]->ODR | ROW_PIN_NUMBER;
 	row_pins[3]->ODR = row_pins[3]->ODR | ROW_PIN_NUMBER;
 	
-	/* Set priority for EXTI1_IRQn, EXTI2_IRQn, EXTI3_IRQn, EXTI4_IRQn Handler */
+	/* Set priority for EXTI1_IRQn, EXTI2_IRQn, EXTI3_IRQn, EXTI4_IRQn Handler.
+		 Each EXTIn_IRQ handler corresponds to column n interrupt (n = 1, 2, 3, 4). */
 	HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
 	HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
 	HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
@@ -192,7 +197,7 @@ void Keypad_Init(void)
 	HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 	
 	KEYPAD_STATE = UNPRESSED;
-	KEYPAD_KEY_PRESSED = 0;
+	KEYPAD_KEY_PRESSED = 0;		/* Initially unpressed. */
 }
 
 /**
